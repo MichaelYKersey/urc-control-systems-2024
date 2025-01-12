@@ -4,7 +4,7 @@
 #include <libhal/units.hpp>
 namespace sjsu::drivers {
 
-class nhdd3zv3
+class nhd0420d3z
 {
 private:
   constexpr static hal::byte default_i2c_address = 0x50;
@@ -25,7 +25,7 @@ private:
   hal::byte m_cursor_column = 0;
 
 public:
-  nhdd3zv3(hal::i2c& p_i2c, hal::byte p_i2c_address = default_i2c_address);
+  nhd0420d3z(hal::i2c& p_i2c, hal::byte p_i2c_address = default_i2c_address);
 
   void display_message(std::string_view str);
   void power(bool on);

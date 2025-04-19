@@ -1,3 +1,4 @@
+#include <libhal/motor.hpp>
 #include <libhal/output_pin.hpp>
 #include <libhal/pwm.hpp>
 namespace sjsu::drivers {

@@ -38,19 +38,25 @@ hal::byte nhd0420d3z::coordinates_to_position(hal::byte line, hal::byte column)
   }
   return pos;
 }
+void nhd0420d3z::send_data(hal::byte data)
+{
+  std::array<hal::byte, 1> command = { data };
+  hal::write(m_i2c_bus, m_i2c_address, command);
+}
+void nhd0420d3z::send_prefix()
+{
+  send_data(commands::prefix);
+}
 void nhd0420d3z::write_char(char c)
 {
-  if (m_cursor_line >= display_lines || m_cursor_column >= display_columns)
-    return;
-  std::array<hal::byte, 1> command = { c };
-  hal::write(m_i2c_bus, m_i2c_address, command);
+  send_prefix();
+  send_data(c);
 }
 void nhd0420d3z::set_cursor_position(hal::byte line, hal::byte column)
 {
-  std::array<hal::byte, 3> command = { commands::prefix,
-                                       commands::set_cursor,
-                                       coordinates_to_position(line, column) };
-  hal::write(m_i2c_bus, m_i2c_address, command);
+  send_prefix();
+  send_data(set_cursor);
+  send_data(coordinates_to_position(line, column));
   m_cursor_line = line;
   m_cursor_column = column;
 }
@@ -58,26 +64,23 @@ void nhd0420d3z::set_cursor_position(hal::byte line, hal::byte column)
 void nhd0420d3z::move_cursor_right()
 {
   m_cursor_line++;
-  if (m_cursor_line >= display_columns - 1)
+  if (m_cursor_line >= display_columns - 1) {
     return;
-  constexpr std::array<hal::byte, 2> command = {
-    commands::prefix, commands::move_cursor_right_one_place
-  };
-  hal::write(m_i2c_bus, m_i2c_address, command);
+  }
+  send_prefix();
+  send_data(commands::move_cursor_right_one_place);
 }
 void nhd0420d3z::home_cursor()
 {
-  constexpr std::array<hal::byte, 2> command = { commands::prefix,
-                                                 commands::cursor_home };
-  hal::write(m_i2c_bus, m_i2c_address, command);
+  send_prefix();
+  send_data(commands::cursor_home);
   m_cursor_column = 0;
   m_cursor_line = 0;
 }
 void nhd0420d3z::clear_screen()
 {
-  std::array<hal::byte, 2> command = { commands::prefix,
-                                       commands::clear_screen };
-  hal::write(m_i2c_bus, m_i2c_address, command);
+  send_prefix();
+  send_data(commands::clear_screen);
 }
 
 nhd0420d3z::nhd0420d3z(hal::i2c& p_i2c, hal::byte p_i2c_address)
@@ -87,8 +90,8 @@ nhd0420d3z::nhd0420d3z(hal::i2c& p_i2c, hal::byte p_i2c_address)
 }
 void nhd0420d3z::display_message(std::string_view str)
 {
-  home_cursor();
   clear_screen();
+  set_cursor_position(0, 0);
   auto strIt = str.begin();
   while (m_cursor_line < display_lines && strIt != str.end()) {
     if (*strIt == '\n') {
@@ -101,14 +104,11 @@ void nhd0420d3z::display_message(std::string_view str)
 }
 void nhd0420d3z::power(bool on)
 {
+  send_prefix();
   if (on) {
-    constexpr std::array<hal::byte, 2> command = { commands::prefix,
-                                                   commands::display_on };
-    hal::write(m_i2c_bus, m_i2c_address, command);
+    send_data(commands::display_on);
   } else {
-    constexpr std::array<hal::byte, 2> command = { commands::prefix,
-                                                   commands::display_off };
-    hal::write(m_i2c_bus, m_i2c_address, command);
+    send_data(commands::display_off);
   }
 }
 }  // namespace sjsu::drivers

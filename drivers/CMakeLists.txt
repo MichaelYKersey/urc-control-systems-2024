@@ -27,6 +27,7 @@ libhal_build_demos(
   tla2528_output_pin_demo
   tla2528_input_pin_demo
   tla2528_analog_input_demo
+  nhd0420d3z_demo
 
   INCLUDES
   include
@@ -41,6 +42,7 @@ SOURCES
     src/sk9822.cpp
     src/tla2528.cpp
     src/tla2528_adapters.cpp
+    src/nhd0420d3z.cpp
 
     PACKAGES
 #    libhal-__device__

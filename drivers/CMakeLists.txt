@@ -18,15 +18,18 @@ project(demos LANGUAGES CXX)
 
 libhal_build_demos(
     DEMOS
-  color_sensor_demo
-  led_strip_demo
-  pressure_sensor_demo
-  #pump_manager_demo
-  scd40_demo
-  soil_sensor_demo
-  tla2528_output_pin_demo
-  tla2528_input_pin_demo
-  tla2528_analog_input_demo
+  # color_sensor_demo
+  # led_strip_demo
+  # pressure_sensor_demo
+  # #pump_manager_demo
+  # scd40_demo
+  # soil_sensor_demo
+  # drv8825_demo
+  # tla2528_output_pin_demo
+  # tla2528_input_pin_demo
+  # tla2528_analog_input_demo
+  h_bridge_demo
+
 
   INCLUDES
   include
@@ -39,12 +42,19 @@ SOURCES
     src/scd40.cpp
     src/soil_sensor_sht21.cpp
     src/sk9822.cpp
+    src/drv8825.cpp
     src/tla2528.cpp
     src/tla2528_adapters.cpp
+    src/h_bridge.cpp
 
     PACKAGES
-#    libhal-__device__
+    #Template for importing libhal packages is "libhal-__device__"
+    #replace "__device__" with the libhal device you wish to import
+    #ex: to import from https://github.com/libhal/libhal-rmd the next line would be "libhal-rmd"
 
     LINK_LIBRARIES
-#    libhal::__device__
+    #Template for linking libhal namespaces is "libhal::__device__"
+    #replace "__device__" with the libhal device you wish to import
+    #ex: to import from https://github.com/libhal/libhal-rmd the next line would be "libhal::rmd"
+    
 )

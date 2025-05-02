@@ -9,7 +9,7 @@ class demos(ConanFile):
 
     def requirements(self):
         bootstrap = self.python_requires["libhal-bootstrap"]
-        bootstrap.module.add_demo_requirements(self)
+        # bootstrap.module.add_demo_requirements(self)
         self.requires("libhal-canrouter/[^3.0.0]")
-        # self.requires("libhal-arm-mcu/[1.9.0 || latest]")
+        self.requires("libhal-arm-mcu/[latest]")
         self.requires("minimp3/cci.20211201")

@@ -12,8 +12,8 @@ struct hardware_map_t
   hal::serial* console;
   hal::steady_clock* clock;
   hal::callback<void()> reset;
-  hal::pwm* a_low;
-  hal::pwm* b_low;
+  hal::pwm16_channel* a_low;
+  hal::pwm16_channel* b_low;
   hal::output_pin* a_high;
   hal::output_pin* b_high;
 };

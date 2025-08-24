@@ -18,16 +18,16 @@ project(demos LANGUAGES CXX)
 
 libhal_build_demos(
     DEMOS
-  # color_sensor_demo
-  # led_strip_demo
-  # pressure_sensor_demo
-  # #pump_manager_demo
-  # scd40_demo
-  # soil_sensor_demo
-  # drv8825_demo
-  # tla2528_output_pin_demo
-  # tla2528_input_pin_demo
-  # tla2528_analog_input_demo
+  color_sensor_demo
+  led_strip_demo
+  pressure_sensor_demo
+  # pump_manager_demo
+  scd40_demo
+  soil_sensor_demo
+  drv8825_demo
+  tla2528_output_pin_demo
+  tla2528_input_pin_demo
+  tla2528_analog_input_demo
   h_bridge_demo
 
 

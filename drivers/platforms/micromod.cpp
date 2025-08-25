@@ -1,6 +1,5 @@
-#include <libhal-micromod/micromod.hpp>
 #include <libhal-arm-mcu/stm32f1/timer.hpp>
-
+#include <libhal-micromod/micromod.hpp>
 
 #include "../hardware_map.hpp"
 
@@ -12,7 +11,7 @@ application_framework initialize_platform()
 
   hal::micromod::v1::initialize_platform();
 
-  //for stm till pwm gets added
+  // for stm till pwm gets added
   using st_peripheral = hal::stm32f1::peripheral;
   static hal::stm32f1::general_purpose_timer<st_peripheral::timer2> timer2{};
   static auto timer_pwm_channel_0 =

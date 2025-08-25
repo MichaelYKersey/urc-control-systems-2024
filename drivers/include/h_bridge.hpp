@@ -13,7 +13,7 @@ public:
     : m_pin_a_low(p_pin_a_low)
     , m_pin_b_low(p_pin_b_low)
     , m_pin_a_high(p_pin_a_high)
-    , m_pin_b_high(p_pin_b_high)  
+    , m_pin_b_high(p_pin_b_high)
   {
   }
 

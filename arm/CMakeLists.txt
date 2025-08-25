@@ -6,8 +6,6 @@ project(application LANGUAGES CXX)
 libhal_build_demos(
     DEMOS
     application
-    h_bridge_demo
 
 SOURCES
-  temp_drivers/h_bridge.cpp
 )

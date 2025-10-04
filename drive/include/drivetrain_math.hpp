@@ -23,7 +23,7 @@ using namespace std::chrono_literals;
  */
 std::array<vector2d, module_count> chassis_velocities_to_module_vectors(
   chassis_velocities p_chassis_velocities,
-  std::array<swerve_module, module_count>& p_modules);
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules);
 
 
 //will likely be unused for this rover
@@ -32,7 +32,7 @@ std::array<vector2d, module_count> chassis_velocities_to_module_vectors(
  * the modules
  */
 float module_validity_strain_score(
-  std::array<swerve_module, module_count>& p_modules,
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules,
   std::array<vector2d, module_count> p_vectors);
 
 /**
@@ -43,7 +43,7 @@ float module_validity_strain_score(
  * @return chassis velocities estimate
  */
 chassis_velocities calc_estimated_chassis_velocities(
-  std::array<swerve_module, module_count>& p_modules);
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules);
 
 /**
  * @brief calculates the swerve state with the most angular freedom either side
@@ -87,7 +87,7 @@ sec calculate_total_interpolation_time(swerve_module& p_module,
  * @return estimation of time to interpolate all modules in seconds
  */
 sec calculate_total_interpolation_time(
-  std::array<swerve_module, module_count>& p_modules,
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules,
   std::array<swerve_module_state, module_count> p_end_states);
 
 /**
@@ -99,7 +99,7 @@ sec calculate_total_interpolation_time(
  * @return the states scaled down if needed
  */
 std::array<swerve_module_state, module_count> scale_down_propulsion_speed(
-  std::array<swerve_module, module_count>& p_modules,
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules,
   std::array<swerve_module_state, module_count> p_states);
 
 /**
@@ -124,6 +124,6 @@ swerve_module_state interpolate_state(float p_portion,
  */
 std::array<swerve_module_state, module_count> interpolate_states(
   sec p_cycle_time,
-  std::array<swerve_module, module_count>& p_modules,
+  std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules,
   std::array<swerve_module_state, module_count> p_end_states);
 }  // namespace sjsu::drive

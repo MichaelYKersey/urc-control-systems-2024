@@ -1,6 +1,7 @@
 #pragma once
 #include "swerve_module.hpp"
 #include <array>
+#include <libhal/pointers.hpp>
 namespace sjsu::drive {
 class drivetrain
 {
@@ -8,7 +9,7 @@ public:
   /**
    * @param p_modules the swerve modules of the drivetrain
    */
-  drivetrain(std::array<swerve_module&, module_count>& p_modules);
+  drivetrain(hal::v5::strong_ptr<std::array<hal::v5::strong_ptr<swerve_module>, module_count>> p_modules);
   /**
    * @brief sets the target velocities of the drivetrain
    *
@@ -37,6 +38,8 @@ public:
    * @brief stops the drivetrain motors
    */
   void stop();
+private:
+    std::array<hal::v5::strong_ptr<swerve_module>,module_count> m_modules;
 };
 
 }  // namespace sjsu::drive

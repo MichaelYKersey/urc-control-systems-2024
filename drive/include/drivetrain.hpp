@@ -1,5 +1,5 @@
 #pragma once
-#include "swerve_module.hpp"
+#include <swerve_module.hpp>
 #include <array>
 #include <libhal/pointers.hpp>
 namespace sjsu::drive {
@@ -40,6 +40,7 @@ public:
   void stop();
 private:
     std::array<hal::v5::strong_ptr<swerve_module>,module_count> m_modules;
+    chassis_velocities m_target_state;
 };
 
 }  // namespace sjsu::drive

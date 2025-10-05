@@ -1,11 +1,13 @@
-#include "swerve_module.hpp"
-#include "vector2d.hpp"
 #include <array>
 #include <cmath>
 #include <cstdlib>
 #include <libhal/units.hpp>
 #include <numbers>
+#include <swerve_module.hpp>
 #include <sys/types.h>
+#include <vector2d.hpp>
+
+
 namespace sjsu::drive {
 
 using namespace std::chrono_literals;
@@ -25,8 +27,7 @@ std::array<vector2d, module_count> chassis_velocities_to_module_vectors(
   chassis_velocities p_chassis_velocities,
   std::array<hal::v5::strong_ptr<swerve_module>, module_count>& p_modules);
 
-
-//will likely be unused for this rover
+// will likely be unused for this rover
 /**
  * @brief calculates a score that represents how much conflict there is between
  * the modules

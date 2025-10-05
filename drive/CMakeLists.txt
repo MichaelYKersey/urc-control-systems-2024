@@ -7,6 +7,9 @@ libhal_build_demos(
 
 DEMOS
     application
+INCLUDES
+    include
+
 
 PACKAGES
 #    libhal-__device__

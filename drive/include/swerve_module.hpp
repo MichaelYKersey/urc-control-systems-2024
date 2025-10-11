@@ -43,6 +43,11 @@ public:
    */
   void stop();
   /**
+   * @brief if the drivetrain is at a full stop (or within tolerance of stop)
+   * @return if the drivetrain is at a full stop (or within tolerance of stop)
+   */
+  bool stopped();
+  /**
    * @brief sets the target module state the module will try to set
    *
    * @param p_target_state the target module state

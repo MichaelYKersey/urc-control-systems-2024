@@ -9,7 +9,9 @@ DEMOS
     application
 INCLUDES
     include
-
+SOURCE
+    src/drivetrain_math.cpp
+    src/drivetrain.cpp
 
 PACKAGES
 #    libhal-__device__

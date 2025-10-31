@@ -1,16 +1,17 @@
-#include "../include/swerve_module.hpp"
-#include "resource_list.hpp"
 #include <cmath>
 #include <cstdlib>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
 #include <libhal/pointers.hpp>
+#include <libhal/units.hpp>
+#include <swerve_module.hpp>
 
 using namespace std::chrono_literals;
 using namespace hal::literals;
 
 namespace sjsu::drive {
+
 swerve_module::swerve_module(
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_steer_motor,
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_propulsion_motor,
@@ -94,11 +95,11 @@ void swerve_module::hard_home()
     m_steer_motor->velocity_control(1);
   }
   while (!m_limit_switch->level()) {
-    hal::delay(*m_clock, 250ms);//250ms seams safe refresh time
+    hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
   }
   m_steer_motor->velocity_control(0);  // stops
   // hal::print<128>(*console, "Final level: %d\n", m_limit_switch->level());
-  
+
   m_steer_motor->feedback_request(
     hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
   float stop_angle = m_steer_motor->feedback().angle();
@@ -106,8 +107,14 @@ void swerve_module::hard_home()
   // hal::print<128>(*console, "Stopped angle: %f\n", stop_angle);
   m_steer_offset = stop_angle - settings.limit_switch_position;
   // hal::print<128>(
-  //   *console, "fin position: %f\n", refresh_actual_state_cache().steer_angle);
+  //   *console, "fin position: %f\n",
+  //   refresh_actual_state_cache().steer_angle);
   set_target_state(swerve_module_state(0, 0));
+}
+
+float swerve_module::get_steer_offset()
+{
+  return m_steer_offset;
 }
 
 }  // namespace sjsu::drive

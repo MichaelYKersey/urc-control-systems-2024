@@ -37,10 +37,10 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   if (m_steer_offset == NAN) {
     throw hal::resource_unavailable_try_again(this);
   }
-  m_target_state = p_target_state;
   if (!can_reach_state(m_target_state)) {
     throw hal::argument_out_of_domain(this);
   }
+  m_target_state = p_target_state;
   // auto console = resources::console();
   // m_steer_motor->feedback_request(
   //   hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
@@ -53,7 +53,7 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   //                                 1);
   m_steer_motor->position_control(m_target_state.steer_angle + m_steer_offset,
                                   120);
-  // m_propulsion_motor->velocity_control(m_target_state.propulsion_velocity);
+  m_propulsion_motor->velocity_control(m_target_state.propulsion_velocity);
 }
 
 bool swerve_module::can_reach_state(swerve_module_state const& p_state) const

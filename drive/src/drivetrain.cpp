@@ -4,6 +4,7 @@
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
 #include <libhal-util/serial.hpp>
+#include <libhal/error.hpp>
 #include <swerve_module.hpp>
 
 namespace sjsu::drive {
@@ -27,8 +28,8 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   bool can_reach = true;
   auto console = resources::console();
   for (vector2d v : vectors) {
-    hal::print<128>(*console,"vec:%f,%f\n",v.x,v.y);
-  }  
+    hal::print<128>(*console, "vec:%f,%f\n", v.x, v.y);
+  }
 
   for (int i = 0; can_reach && i < module_count; i++) {
     m_final_target_module_states[i] =
@@ -57,11 +58,12 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   }
   return can_reach;
 }
-chassis_velocities drivetrain::get_target_state() {
+chassis_velocities drivetrain::get_target_state()
+{
   return m_target_state;
 }
 
-chassis_velocities drivetrain::get_actual_state()
+chassis_velocities drivetrain::get_state_estimate()
 {
   return m_chassis_velocities_estimate;
 }
@@ -119,10 +121,10 @@ void drivetrain::periodic()
       next_target_states = m_final_target_module_states;
     }
   }
-  
+
   // interpolate into modules next target_states
-  next_target_states = interpolate_states(
-    m_refresh_rate, *m_modules, next_target_states);
+  next_target_states =
+    interpolate_states(m_refresh_rate, *m_modules, next_target_states);
   for (int i = 0; i < module_count; i++) {
     swerve_module& module = *(m_modules->at(i));
     module.set_target_state(next_target_states[i]);
@@ -177,6 +179,12 @@ void drivetrain::hard_home()
   for (auto& m : *m_modules) {
     m->hard_home();
   }
-}
+  float drivetrain::get_steer_offset(uint p_module_index)
+  {
+    if (p_module_index < 0 || p_module_index >= m_modules->size()) {
+      throw hal::argument_out_of_domain(this);
+    }
+    return m_modules[p_module_index].get_steer_offset();
+  }
 
 }  // namespace sjsu::drive

@@ -31,7 +31,7 @@ public:
    *
    * @return estimate of the drivetrain velocities
    */
-  chassis_velocities get_actual_state();
+  chassis_velocities get_state_estimate();
   /**
    * @brief this is the the function to call to update every cycle
    */
@@ -61,6 +61,8 @@ public:
    * interupted)
    */
   void hard_home();
+
+  float get_steer_offset(uint p_module_index);
 
 private:
   hal::v5::strong_ptr<

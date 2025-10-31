@@ -102,10 +102,11 @@ public:
    */
   bool tolerance_timed_out() const;
   /**
-   * @brief with run homing in a fixed loop (will not update other motors or get
+   * @brief run homing in a fixed loop (will not update other motors or get
    * interupted)
    */
   void hard_home();
+  float get_steer_offset();
 
 private:
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_steer_motor;

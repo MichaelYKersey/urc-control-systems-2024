@@ -1,5 +1,3 @@
-#include "../include/swerve_module.hpp"
-#include <resource_list.hpp>
 #include <cmath>
 #include <cstdlib>
 #include <drivetrain_math.hpp>
@@ -15,6 +13,7 @@ using namespace std::chrono_literals;
 using namespace hal::literals;
 
 namespace sjsu::drive {
+
 swerve_module::swerve_module(
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_steer_motor,
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_propulsion_motor,
@@ -176,6 +175,11 @@ void swerve_module::hard_home()
   // hal::print<128>(
   //   *console, "fin position: %f\n",
   //   refresh_actual_state_cache().steer_angle);
+}
+
+float swerve_module::get_steer_offset()
+{
+  return m_steer_offset;
 }
 
 }  // namespace sjsu::drive

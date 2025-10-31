@@ -92,12 +92,12 @@ public:
    * @return if the the module has been outside of tolerance for too long
    */
   bool tolerance_timed_out();
+  float get_steer_offset();
 
 private:
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_steer_motor;
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_propulsion_motor;
   swerve_module_state m_target_state;
   swerve_module_state m_actual_state_cache;
-private:
 };
 }  // namespace sjsu::drive

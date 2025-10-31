@@ -4,6 +4,7 @@
 #include <array>
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
+#include <libhal/error.hpp>
 #include <swerve_module.hpp>
 
 namespace sjsu::drive {
@@ -54,14 +55,14 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   return can_reach;
 }
 
-chassis_velocities drivetrain::get_actual_state()
+chassis_velocities drivetrain::get_state_estimate()
 {
   return m_chassis_velocities_estimate;
 }
 
 void drivetrain::periodic()
 {
-  //TODO: deal with out of tolerance modules.
+  // TODO: deal with out of tolerance modules.
 
   // refresh telemetry and state
   refresh_telemetry();
@@ -127,7 +128,8 @@ void drivetrain::refresh_telemetry()
   }
   // update velocity estimates
   // TODO: uncomment when calc_estimated_chassis_velocities is implemented
-  // m_chassis_velocities_estimate = calc_estimated_chassis_velocities(*m_modules);
+  // m_chassis_velocities_estimate =
+  // calc_estimated_chassis_velocities(*m_modules);
 }
 
 void drivetrain::stop()
@@ -159,6 +161,13 @@ bool drivetrain::aligned()
     }
   }
   return true;
+}
+float drivetrain::get_steer_offset(uint p_module_index)
+{
+  if (p_module_index < 0 || p_module_index >= m_modules->size()) {
+    throw hal::argument_out_of_domain(this);
+  }
+  return m_modules[p_module_index].get_steer_offset();
 }
 
 }  // namespace sjsu::drive

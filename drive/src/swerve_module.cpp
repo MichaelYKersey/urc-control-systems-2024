@@ -1,13 +1,15 @@
 #pragma once
-#include "../include/swerve_module.hpp"
 #include <cstdlib>
 #include <libhal/pointers.hpp>
 #include <libhal/units.hpp>
+#include <swerve_module.hpp>
+
 
 namespace sjsu::drive {
-swerve_module::swerve_module(hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_steer_motor,
-                             hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_propulsion_motor,
-                             swerve_module_settings p_settings)
+swerve_module::swerve_module(
+  hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_steer_motor,
+  hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> p_propulsion_motor,
+  swerve_module_settings p_settings)
   : settings(p_settings)
   , m_steer_motor(p_steer_motor)
   , m_propulsion_motor(p_propulsion_motor)
@@ -46,6 +48,10 @@ swerve_module_state swerve_module::refresh_actual_state_cache()
   m_actual_state_cache.propulsion_velocity =
     m_propulsion_motor->feedback().speed();
   return m_actual_state_cache;
+}
+
+float swerve_module::get_steer_offset() {
+  return settings.steer_offset;
 }
 
 }  // namespace sjsu::drive

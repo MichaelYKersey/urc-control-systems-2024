@@ -15,7 +15,7 @@ namespace sjsu::drive {
 
 struct swerve_module_settings
 {
-  vector2d position = vector2d(NAN,NAN);
+  vector2d position = vector2d(NAN, NAN);
   meters_per_sec max_speed = NAN;
   meters_per_sec_per_sec acceleration = NAN;
   deg_per_sec turn_speed = NAN;

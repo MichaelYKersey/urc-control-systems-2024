@@ -55,6 +55,11 @@ public:
    * within tolerance of that)
    */
   bool aligned();
+  /**
+   * @brief with run homing in a fixed loop (will not update other motors or get
+   * interupted)
+   */
+  void hard_home();
 
 private:
   hal::v5::strong_ptr<

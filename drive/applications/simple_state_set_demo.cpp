@@ -38,7 +38,6 @@ void application()
         (*swerve_modules)[i]->set_target_state(swerve_module_state(0, 0.1));
       }
       hal::delay(*clock, 1000ms);
-      hal::delay(*clock, 1000ms);
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(0, -0.1));
       }

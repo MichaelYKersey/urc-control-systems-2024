@@ -59,7 +59,7 @@ chassis_velocities drivetrain::get_actual_state()
 
 void drivetrain::periodic()
 {
-  //TODO: deal with out of tolerance modules.
+  // TODO: deal with out of tolerance modules.
 
   // refresh telemetry and state
   refresh_telemetry();
@@ -125,7 +125,8 @@ void drivetrain::refresh_telemetry()
   }
   // update velocity estimates
   // TODO: uncomment when calc_estimated_chassis_velocities is implemented
-  // m_chassis_velocities_estimate = calc_estimated_chassis_velocities(*m_modules);
+  // m_chassis_velocities_estimate =
+  // calc_estimated_chassis_velocities(*m_modules);
 }
 
 void drivetrain::stop()
@@ -157,6 +158,12 @@ bool drivetrain::aligned()
     }
   }
   return true;
+}
+void drivetrain::hard_home()
+{
+  for (auto& m: *m_modules) {
+    m->hard_home();
+  }
 }
 
 }  // namespace sjsu::drive

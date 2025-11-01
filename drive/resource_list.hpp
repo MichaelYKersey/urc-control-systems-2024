@@ -25,25 +25,7 @@
 // (.cpp) files.
 namespace sjsu::drive {
 namespace resources {
-// =======================================================
-// Defined by each platform file
-// =======================================================
-/**
- * @brief Allocator for driver memory
- *
- * The expectation is that the implementation of this allocator is a
- * std::pmr::monotonic_buffer_resource with static memory storage, meaning the
- * memory is fixed in size and memory cannot be deallocated. This is fine for
- * the demos.
- *
- * @return std::pmr::polymorphic_allocator<>
- */
-std::pmr::polymorphic_allocator<> driver_allocator();
-/**
- * @brief Steady clock that provides the current uptime
- *
- * @return hal::v5::strong_ptr<hal::steady_clock>
- */
+
 hal::v5::strong_ptr<hal::steady_clock> clock();
 hal::v5::strong_ptr<hal::serial> console();
 hal::v5::strong_ptr<hal::output_pin> status_led();

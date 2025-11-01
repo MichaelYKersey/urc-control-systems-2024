@@ -8,6 +8,7 @@ libhal_build_demos(
 DEMOS
     application
     sequential_homing_demo
+    simple_state_set_demo
     
 INCLUDES
     include

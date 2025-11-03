@@ -9,6 +9,7 @@ DEMOS
     application
     sequential_homing_demo
     simple_state_set_demo
+    prop_motor_test
     
 INCLUDES
     include

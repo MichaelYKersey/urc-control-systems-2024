@@ -222,7 +222,7 @@ hal::v5::strong_ptr<hal::input_pin> back_right_limit_switch()
 }
 
 constexpr uint16_t front_left_steer_can_id =  0x14C;
-constexpr uint16_t front_left_prop_can_id =  0x141;
+constexpr uint16_t front_left_prop_can_id =  0x148;
 constexpr uint16_t front_right_steer_can_id =  0x142;
 constexpr uint16_t front_right_prop_can_id =  0x14D;
 constexpr uint16_t back_left_steer_can_id =  0x144;

@@ -1,4 +1,5 @@
-#include "swerve_module.hpp"
+#pragma  once
+#include <swerve_module.hpp>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -12,7 +13,7 @@ namespace sjsu::drive {
 
 struct chassis_velocities_request
 {
-  chassis_velocities chassis_velocities;
+  chassis_velocities chassis_vels;
   /**
    * MC uses it as if you should resolve_module conflicts
    * Drive uses it as if it ran into a module conflict

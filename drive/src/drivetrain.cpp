@@ -181,9 +181,9 @@ void drivetrain::hard_home()
   }
 }
 
-float drivetrain::get_steer_offset(uint p_module_index) const
+float drivetrain::get_steer_offset(unsigned int p_module_index) const
 {
-  if (p_module_index < 0 || p_module_index >= m_modules->size()) {
+  if (p_module_index >= m_modules->size()) {
     throw hal::argument_out_of_domain(this);
   }
   return m_modules[p_module_index].get_steer_offset();

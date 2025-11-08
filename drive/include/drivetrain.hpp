@@ -62,7 +62,7 @@ public:
    */
   void hard_home();
 
-  float get_steer_offset (uint32_t p_module_index) const;
+  float get_steer_offset (unsigned int p_module_index) const;
 
 private:
   hal::v5::strong_ptr<

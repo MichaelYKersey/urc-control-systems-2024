@@ -1,12 +1,12 @@
 #include "swerve_module.hpp"
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <drivetrain.hpp>
 #include <libhal-util/can.hpp>
 #include <libhal/can.hpp>
 #include <libhal/pointers.hpp>
 #include <optional>
-
 
 namespace sjsu::drive {
 
@@ -20,22 +20,6 @@ struct chassis_velocities_request
   bool module_conflicts;
 };
 
-enum class read_can_message_id : uint16_t
-{
-  set_chassis_velocities,
-  set_velocities_Response,
-  heartbeat,
-  heartbeat_reply,
-  homing_sequence,
-  reply_homing_sequence,
-  get_offset,
-  return_offset,
-  get_Estimated_velocities,
-  return_estimated_chassis_velocities,
-  config,
-  Config_ack,
-};
-
 class mission_control_manager
 {
 public:
@@ -43,6 +27,10 @@ public:
     hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver);
 
   float fixed_point_to_float(int16_t p_fixed_point_num, int p_expo);
+  int16_t float_to_fixed_point(float p_float_num, int p_expo);
+  
+  int16_t array_to_int16(std::array<hal::byte, 4> const& p_array);
+  std::array<hal::byte, 4> int16_to_array(int16_t p_num);
 
   // returns most recent velocity request
   std::optional<chassis_velocities_request> read_set_velocity_request();

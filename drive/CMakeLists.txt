@@ -18,9 +18,10 @@ INCLUDES
     include
     .
 SOURCES
-    ./src/drivetrain_math.cpp
-    ./src/drivetrain.cpp
-    ./src/swerve_module.cpp
+    src/drivetrain_math.cpp
+    src/drivetrain.cpp
+    src/mission_control_manager.cpp
+    src/swerve_module.cpp
 
 PACKAGES
 #    libhal-__device__

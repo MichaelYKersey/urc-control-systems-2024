@@ -53,7 +53,7 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   return can_reach;
 }
 
-chassis_velocities drivetrain::get_state_estimate()
+chassis_velocities drivetrain::get_state_estimate() const
 {
   return m_chassis_velocities_estimate;
 }
@@ -139,7 +139,7 @@ void drivetrain::stop()
   m_final_target_module_states = {};
 }
 
-bool drivetrain::stopped()
+bool drivetrain::stopped() const
 {
   for (auto& m : *m_modules) {
     if (!m->stopped())
@@ -147,7 +147,7 @@ bool drivetrain::stopped()
   }
   return true;
 }
-bool drivetrain::aligned()
+bool drivetrain::aligned() const
 {
   for (int i = 0; i < module_count; i++) {
     swerve_module& module = *((*m_modules)[i]);
@@ -160,12 +160,12 @@ bool drivetrain::aligned()
   }
   return true;
 }
-float drivetrain::get_steer_offset(uint p_module_index)
+float drivetrain::get_steer_offset(uint p_module_index) const
 {
   if (p_module_index < 0 || p_module_index >= m_modules->size()) {
     throw hal::argument_out_of_domain(this);
   }
-  return m_modules[p_module_index].get_steer_offset();
+  return m_modules->at(p_module_index)->get_steer_offset();
 }
 
 }  // namespace sjsu::drive

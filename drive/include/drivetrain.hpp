@@ -30,7 +30,7 @@ public:
    *
    * @return estimate of the drivetrain velocities
    */
-  chassis_velocities get_state_estimate();
+  chassis_velocities get_state_estimate() const;
   /**
    * @brief this is the the function to call to update every cycle
    */
@@ -47,16 +47,16 @@ public:
    * @brief if the drivetrain is at a full stop (or within tolerance of stop)
    * @return if the drivetrain is at a full stop (or within tolerance of stop)
    */
-  bool stopped();
+  bool stopped() const;
   /**
    * @brief if the swerve module angles match the final target state angles (or
    * within tolerance of that)
    * @return if the swerve module angles match the final target state angles (or
    * within tolerance of that)
    */
-  bool aligned();
+  bool aligned() const;
 
-  float get_steer_offset(uint p_module_index);
+  float get_steer_offset (uint32_t p_module_index) const;
 
 private:
   hal::v5::strong_ptr<

@@ -1,9 +1,10 @@
-#include <drivetrain_math.hpp>
 #include "swerve_module.hpp"
 #include "vector2d.hpp"
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <drivetrain_math.hpp>
+#include <libhal-util/steady_clock.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/units.hpp>
 
@@ -206,4 +207,12 @@ float modulus_range(float p_value, float p_lower, float p_upper)
   }
   return offset + p_lower;
 }
+
+hal::time_duration get_clock_time(hal::steady_clock& p_clock)
+{
+  hal::time_duration const period =
+    sec_to_hal_time_duration(1.0 / p_clock.frequency());
+  return period * p_clock.uptime();
+}
+
 }  // namespace sjsu::drive

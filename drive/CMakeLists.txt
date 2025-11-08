@@ -11,6 +11,7 @@ DEMOS
     simple_state_set_demo
     prop_motor_test
     chassis_vel_demo
+    drive_cycle
     
 INCLUDES
     include

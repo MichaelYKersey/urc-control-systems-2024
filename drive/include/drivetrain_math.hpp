@@ -1,6 +1,7 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <libhal/steady_clock.hpp>
 #include <libhal/units.hpp>
 #include <swerve_module.hpp>
 #include <sys/types.h>
@@ -141,4 +142,15 @@ std::array<swerve_module_state, module_count> interpolate_states(
  * @param p_upper the upper limit of the bounds to place the value in
  */
 float modulus_range(float p_value, float p_lower, float p_upper);
+
+// TODO: for some reason the compiler is saying that the function is called
+// before it's definition, so for now it is in the hpp file move to cpp later
+constexpr hal::time_duration sec_to_hal_time_duration(sec p_time)
+{
+  return static_cast<hal::time_duration>(static_cast<long long>(p_time * 1e9f));
+}
+constexpr sec hal_time_duration_to_sec(hal::time_duration p_time)
+{
+  return static_cast<float>(p_time.count()) * 1e-9f;
+}
 }  // namespace sjsu::drive

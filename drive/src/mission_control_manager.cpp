@@ -6,6 +6,7 @@
 #include <libhal/units.hpp>
 #include <mission_control_manager.hpp>
 #include <optional>
+#include <sys/_types.h>
 #include <sys/types.h>
 
 namespace {
@@ -46,7 +47,7 @@ mission_control_manager::mission_control_manager(
 
 float fixed_point_to_float(int16_t p_fixed_point_num, int p_expo)
 {
-  uint shifted_expo = 1 << abs(p_expo);
+  unsigned int shifted_expo = 1 << abs(p_expo);
   float floating_num = p_fixed_point_num;
   if (p_expo < 0) {
     return floating_num / shifted_expo;
@@ -56,7 +57,7 @@ float fixed_point_to_float(int16_t p_fixed_point_num, int p_expo)
 }
 int16_t float_to_fixed_point(float p_floating_point_num, int p_expo)
 {
-  uint shifted_expo = 1 << abs(p_expo);
+  unsigned int shifted_expo = 1 << abs(p_expo);
   if (p_expo > 0) {
     p_floating_point_num /= shifted_expo;
   } else {
@@ -70,7 +71,8 @@ int16_t array_to_int16(std::array<hal::byte, 2> const& p_array);
 std::array<hal::byte, 2> int16_to_byte_array(int16_t p_num)
 {
   uint16_t unum = std::bit_cast<uint16_t>(p_num);
-  std::array<hal::byte, 2> byte_array = { unum >> 8, unum }; // NO LINT
+  std::array<hal::byte, 2> byte_array = { static_cast<uint8_t>(unum >> 8),
+                                          static_cast<uint8_t>(unum) };
   return byte_array;
 }
 
@@ -117,7 +119,7 @@ void mission_control_manager::fulfill_data_requests(
   }
 }
 
-void mission_control_manager::clear_heartbeat_requests();
-void mission_control_manager::reply_heartbeat();
+// void mission_control_manager::clear_heartbeat_requests();
+// void mission_control_manager::reply_heartbeat();
 
 }  // namespace sjsu::drive

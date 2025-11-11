@@ -26,22 +26,27 @@ void application()
         throw e;
       }
     }
+    for (int i = 0; i < module_count; i++) {
+      (*swerve_modules)[i]->set_target_state(swerve_module_state(0,0));
+    }
+    hal::delay(*clock, 10s);
     while (true) {
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(90, 0));
       }
-      hal::delay(*clock, 1000ms);
+      hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(-90, 0));
       }
+      hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
-        (*swerve_modules)[i]->set_target_state(swerve_module_state(0, 0.1));
+        (*swerve_modules)[i]->set_target_state(swerve_module_state(0, 5));
       }
-      hal::delay(*clock, 1000ms);
+      hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
-        (*swerve_modules)[i]->set_target_state(swerve_module_state(0, -0.1));
+        (*swerve_modules)[i]->set_target_state(swerve_module_state(0, -5));
       }
-      hal::delay(*clock, 1000ms);
+      hal::delay(*clock, 10s);
     }
   } catch (hal::exception e) {
     hal::print<128>(*console, "Exception code %d\n", e.error_code());

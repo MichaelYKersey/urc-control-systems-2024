@@ -15,6 +15,7 @@ void application()
   constexpr auto transition_time = 5s;
   constexpr int delay_cycles = transition_time/refresh_rate;
   drivetrain dt(resources::swerve_modules(), hal_time_duration_to_sec(refresh_rate));
+  dt.hard_home();
   auto clock = resources::clock();
 
   dt.set_target_state(chassis_velocities(vector2d(0, 0), 1), true);

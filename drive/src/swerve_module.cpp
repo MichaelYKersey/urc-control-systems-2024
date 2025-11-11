@@ -42,6 +42,8 @@ bool swerve_module::stopped() const
 
 void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 {
+  auto console = resources::console();
+  hal::print<128>(*console,"state:%f,%f\n",p_target_state.steer_angle, p_target_state.propulsion_velocity);
   if (m_steer_offset == NAN) {
     throw hal::resource_unavailable_try_again(this);
   }
@@ -61,7 +63,7 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   //                                 1);
   m_steer_motor->position_control(m_target_state.steer_angle + m_steer_offset,
                                   30);
-  hal::rpm velocity = m_target_state.steer_angle * settings.mps_to_rpm;
+  hal::rpm velocity = m_target_state.propulsion_velocity * settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
     velocity *= -1;
   }
@@ -124,9 +126,9 @@ void swerve_module::hard_home()
   } else {
     m_steer_motor->velocity_control(1);
   }
-  while (m_limit_switch->level()) {
-    hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
-  }
+  // while (m_limit_switch->level()) {
+  //   hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
+  // }
   m_steer_motor->velocity_control(0);  // stops
   hal::print<128>(*console, "Final level: %d\n", m_limit_switch->level());
 

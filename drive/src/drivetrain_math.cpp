@@ -60,10 +60,15 @@ swerve_module_state calculate_freest_state(swerve_module const& p_module,
     (p_module.settings.min_angle + p_module.settings.max_angle) / 2.0f;
   swerve_module_state freest_state;
   freest_state.steer_angle =
-    modulus_range(vector2d::polar_angle(p_target_vector),
-                  mid_point - std::numbers::pi / 2.0f,
-                  mid_point + std::numbers::pi / 2.0f);
+    modulus_range(vector2d::polar_angle(p_target_vector) * (180 / std::numbers::pi),
+                  mid_point - 90,
+                  mid_point + 90);
   freest_state.propulsion_velocity = vector2d::length(p_target_vector);
+  if (freest_state.steer_angle != modulus_range(vector2d::polar_angle(p_target_vector) * (180 / std::numbers::pi),
+                  mid_point - 180,
+                  mid_point + 180)) {
+    freest_state.propulsion_velocity *= -1;
+  }
   return freest_state;
 }
 
@@ -77,14 +82,14 @@ swerve_module_state calculate_closest_state(swerve_module const& p_module,
   float cur_angle = p_module.get_actual_state_cache().steer_angle;
   swerve_module_state closest_state;
   closest_state.steer_angle =
-    modulus_range(vector2d::polar_angle(p_target_vector),
-                  cur_angle - std::numbers::pi / 2.0f,
-                  cur_angle + std::numbers::pi / 2.0f);
+    modulus_range(vector2d::polar_angle(p_target_vector) * (180 / std::numbers::pi),
+                  cur_angle - 90,
+                  cur_angle + 90);
 
   closest_state.propulsion_velocity = vector2d::length(p_target_vector);
-  if (modulus_range(vector2d::polar_angle(p_target_vector),
-                    cur_angle - std::numbers::pi,
-                    cur_angle + std::numbers::pi) !=
+  if (modulus_range(vector2d::polar_angle(p_target_vector) * (180 / std::numbers::pi),
+                    cur_angle - 180,
+                    cur_angle + 180) !=
       closest_state.steer_angle) {
     closest_state.propulsion_velocity *= -1;
   }

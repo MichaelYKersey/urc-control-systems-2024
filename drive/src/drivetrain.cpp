@@ -1,7 +1,9 @@
+#include "resource_list.hpp"
 #include "vector2d.hpp"
 #include <array>
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
+#include <libhal-util/serial.hpp>
 #include <swerve_module.hpp>
 
 namespace sjsu::drive {
@@ -23,12 +25,16 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   std::array<vector2d, module_count> vectors =
     chassis_velocities_to_module_vectors(m_target_state, *m_modules);
   bool can_reach = true;
+  auto console = resources::console();
+  for (vector2d v : vectors) {
+    hal::print<128>(*console,"vec:%f,%f\n",v.x,v.y);
+  }  
 
   for (int i = 0; can_reach && i < module_count; i++) {
     m_final_target_module_states[i] =
       calculate_closest_state(*(m_modules->at(i)), vectors[i]);
     // abort if can't reach
-    if (m_modules->at(i)->can_reach_state(m_final_target_module_states[i])) {
+    if (!m_modules->at(i)->can_reach_state(m_final_target_module_states[i])) {
       can_reach = false;
     }
   }
@@ -50,6 +56,9 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
     }
   }
   return can_reach;
+}
+chassis_velocities drivetrain::get_target_state() {
+  return m_target_state;
 }
 
 chassis_velocities drivetrain::get_actual_state()

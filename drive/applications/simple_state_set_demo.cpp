@@ -34,18 +34,22 @@ void application()
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(90, 0));
       }
+      hal::print(*console, "(90,0)\n");
       hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(-90, 0));
       }
+      hal::print(*console, "(-90,0)\n");
       hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(0, 0.125));
       }
+      hal::print(*console, "(0, 0.125)\n");
       hal::delay(*clock, 10s);
       for (int i = 0; i < module_count; i++) {
         (*swerve_modules)[i]->set_target_state(swerve_module_state(0, -0.125));
       }
+      hal::print(*console, "(0, -0.125)\n");
       hal::delay(*clock, 10s);
     }
   } catch (hal::exception e) {

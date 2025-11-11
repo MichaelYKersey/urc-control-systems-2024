@@ -24,6 +24,7 @@ public:
    */
   bool set_target_state(chassis_velocities p_target_state,
                         bool p_resolve_module_conflicts);
+  chassis_velocities get_target_state();
   /**
    * @brief calculates an estimate of the drivetrain velocities based on module
    * readings

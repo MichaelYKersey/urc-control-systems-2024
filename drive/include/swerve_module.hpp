@@ -27,6 +27,7 @@ struct swerve_module_settings
   sec tolerance_timeout = 0.5;
   // If motor turns clockwise inorder to home
   bool home_clockwise = true;
+  bool drive_forward_clockwise = true;
 };
 
 class swerve_module

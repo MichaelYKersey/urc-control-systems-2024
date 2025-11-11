@@ -384,26 +384,30 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_right_prop()
   return back_right_prop_ptr;
 }
 
-constexpr swerve_module_settings front_left_settings{ .position =
-                                                        vector2d(1, 1),
-                                                      .limit_switch_position =
-                                                        135.0,
-                                                      .home_clockwise = false };
-constexpr swerve_module_settings front_right_settings{ .position =
-                                                         vector2d(1, -1),
-                                                       .limit_switch_position =
-                                                         -135.0,
-                                                       .home_clockwise = true };
-constexpr swerve_module_settings back_left_settings{ .position =
-                                                       vector2d(-1, 1),
-                                                     .limit_switch_position =
-                                                       135.0,
-                                                     .home_clockwise = false };
-constexpr swerve_module_settings back_right_settings{ .position =
-                                                        vector2d(-1, -1),
-                                                      .limit_switch_position =
-                                                        -135.0,
-                                                      .home_clockwise = true };
+constexpr swerve_module_settings front_left_settings{
+  .position = vector2d(1, 1),
+  .limit_switch_position = 135.0,
+  .home_clockwise = false,
+  .drive_forward_clockwise = true
+};
+constexpr swerve_module_settings front_right_settings{
+  .position = vector2d(1, -1),
+  .limit_switch_position = -135.0,
+  .home_clockwise = true,
+  .drive_forward_clockwise = false
+};
+constexpr swerve_module_settings back_left_settings{
+  .position = vector2d(-1, 1),
+  .limit_switch_position = 135.0,
+  .home_clockwise = false,
+  .drive_forward_clockwise = true
+};
+constexpr swerve_module_settings back_right_settings{
+  .position = vector2d(-1, -1),
+  .limit_switch_position = -135.0,
+  .home_clockwise = true,
+  .drive_forward_clockwise = false
+};
 hal::v5::optional_ptr<swerve_module> front_left_swerve_module_ptr;
 hal::v5::strong_ptr<swerve_module> front_left_swerve_module()
 {

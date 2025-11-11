@@ -26,9 +26,9 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
 
   for (int i = 0; can_reach && i < module_count; i++) {
     m_final_target_module_states[i] =
-      calculate_closest_state(*((*m_modules)[i]), vectors[i]);
+      calculate_closest_state(*(m_modules->at(i)), vectors[i]);
     // abort if can't reach
-    if ((*m_modules)[i]->can_reach_state(m_final_target_module_states[i])) {
+    if (m_modules->at(i)->can_reach_state(m_final_target_module_states[i])) {
       can_reach = false;
     }
   }
@@ -39,12 +39,12 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
     if (m_resolve_module_conflicts) {
       for (int i = 0; i < module_count; i++) {
         m_final_target_module_states[i] =
-          calculate_freest_state(*((*m_modules)[i]), vectors[i]);
+          calculate_freest_state(*(m_modules->at(i)), vectors[i]);
       }
     } else {
       for (int i = 0; i < module_count; i++) {
         m_final_target_module_states[i] =
-          (*m_modules)[i]->get_actual_state_cache();
+          m_modules->at(i)->get_actual_state_cache();
         m_final_target_module_states[i].propulsion_velocity = 0;
       }
     }
@@ -74,7 +74,7 @@ void drivetrain::periodic()
     // fill array with 0 vel
     for (int i = 0; i < module_count; i++) {
       // get current angle and no propulsion
-      swerve_module& module = *((*m_modules)[i]);
+      swerve_module& module = *(m_modules->at(i));
       float curent_angle = module.get_actual_state_cache().steer_angle;
       next_target_states[i].steer_angle = curent_angle;
       next_target_states[i].propulsion_velocity = 0;
@@ -94,7 +94,7 @@ void drivetrain::periodic()
     // return early if target states already final to not clutter the CAN bus
     bool target_matching = true;
     for (int i = 0; i < module_count; i++) {
-      swerve_module& module = *((*m_modules)[i]);
+      swerve_module& module = *(m_modules->at(i));
       swerve_module_state target_state = module.get_target_state();
       if (target_state != m_final_target_module_states[i] ||
           module.tolerance_timed_out()) {
@@ -104,14 +104,16 @@ void drivetrain::periodic()
     }
     if (target_matching) {
       return;
+    } else {
+      next_target_states = m_final_target_module_states;
     }
   }
-
+  
   // interpolate into modules next target_states
   next_target_states = interpolate_states(
-    m_refresh_rate, *m_modules, m_final_target_module_states);
+    m_refresh_rate, *m_modules, next_target_states);
   for (int i = 0; i < module_count; i++) {
-    swerve_module& module = *((*m_modules)[i]);
+    swerve_module& module = *(m_modules->at(i));
     module.set_target_state(next_target_states[i]);
   }
 }
@@ -149,7 +151,7 @@ bool drivetrain::stopped()
 bool drivetrain::aligned()
 {
   for (int i = 0; i < module_count; i++) {
-    swerve_module& module = *((*m_modules)[i]);
+    swerve_module& module = *(m_modules->at(i));
     float target_angle = m_final_target_module_states[i].steer_angle;
     float actual_angle = module.get_actual_state_cache().steer_angle;
     float tolerance = module.settings.position_tolerance;
@@ -161,7 +163,7 @@ bool drivetrain::aligned()
 }
 void drivetrain::hard_home()
 {
-  for (auto& m: *m_modules) {
+  for (auto& m : *m_modules) {
     m->hard_home();
   }
 }

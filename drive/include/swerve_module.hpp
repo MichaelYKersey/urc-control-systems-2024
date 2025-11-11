@@ -24,6 +24,7 @@ struct swerve_module_settings
   hal::degrees limit_switch_position = NAN;
   hal::degrees position_tolerance = 5.0;
   meters_per_sec velocity_tolerance = 0.5;
+  float mps_to_rpm = 60;
   sec tolerance_timeout = 0.5;
   // If motor turns clockwise inorder to home
   bool home_clockwise = true;

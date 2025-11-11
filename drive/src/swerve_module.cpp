@@ -6,6 +6,7 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
 #include <libhal/pointers.hpp>
+#include <libhal/units.hpp>
 
 using namespace std::chrono_literals;
 using namespace hal::literals;
@@ -60,11 +61,11 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   //                                 1);
   m_steer_motor->position_control(m_target_state.steer_angle + m_steer_offset,
                                   30);
+  hal::rpm velocity = m_target_state.steer_angle * settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
-    m_propulsion_motor->velocity_control(-m_target_state.propulsion_velocity);
-  } else {
-    m_propulsion_motor->velocity_control(m_target_state.propulsion_velocity);
+    velocity *= -1;
   }
+  m_propulsion_motor->velocity_control(velocity);
 }
 
 bool swerve_module::can_reach_state(swerve_module_state const& p_state) const
@@ -86,7 +87,7 @@ swerve_module_state swerve_module::refresh_actual_state_cache()
   m_actual_state_cache.steer_angle =
     m_steer_motor->feedback().angle() - m_steer_offset;
   m_actual_state_cache.propulsion_velocity =
-    m_propulsion_motor->feedback().speed();
+    m_propulsion_motor->feedback().speed() / settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
     m_actual_state_cache.propulsion_velocity *= -1;
   }

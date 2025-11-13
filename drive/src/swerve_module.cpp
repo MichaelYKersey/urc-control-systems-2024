@@ -35,7 +35,7 @@ void swerve_module::stop()
 
 bool swerve_module::stopped() const
 {
-  return m_target_state == swerve_module_state(0, 0) &&
+  return m_target_state.propulsion_velocity == 0 &&
          std::abs(m_actual_state_cache.steer_angle) <=
            settings.velocity_tolerance;
 }
@@ -43,7 +43,7 @@ bool swerve_module::stopped() const
 void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 {
   auto console = resources::console();
-  hal::print<128>(*console,"state:%f,%f\n",p_target_state.steer_angle, p_target_state.propulsion_velocity);
+  hal::print<128>(*console,"set_target_state:%f,%f\n",p_target_state.steer_angle, p_target_state.propulsion_velocity);
   if (m_steer_offset == NAN) {
     throw hal::resource_unavailable_try_again(this);
   }

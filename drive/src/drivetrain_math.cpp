@@ -36,7 +36,7 @@ std::array<vector2d, module_count> chassis_velocities_to_module_vectors(
   std::array<vector2d, module_count> vectors;
   //  convert rotation speed to radians
   float rotational_vel_radians_per_sec =
-    p_chassis_velocities.rotational_vel * std::numbers::pi / 180;
+    p_chassis_velocities.rotational_vel;
   for (unsigned int i = 0; i < vectors.size(); i++) {
     // translation vector is the same
     vector2d transition = p_chassis_velocities.translation;

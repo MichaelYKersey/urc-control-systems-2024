@@ -1,5 +1,4 @@
-#pragma  once
-#include <swerve_module.hpp>
+#pragma once
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -8,6 +7,8 @@
 #include <libhal/can.hpp>
 #include <libhal/pointers.hpp>
 #include <optional>
+#include <swerve_module.hpp>
+
 
 namespace sjsu::drive {
 
@@ -26,10 +27,21 @@ class mission_control_manager
 public:
   mission_control_manager(
     hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver);
-
+  /**
+   * @brief converts a float into a fixed point value
+   * @param p_fixed_point_num value being converted
+   * @param p_expo fixed point exponent, i.e value of fixed point=1 corelates to
+   * 2^p_expo
+   */
   float fixed_point_to_float(int16_t p_fixed_point_num, int p_expo);
+  /**
+   * @brief converts a float into a fixed point value
+   * @param p_float_num value being converted
+   * @param p_expo fixed point exponent, i.e value of fixed point=1 corelates to
+   * 2^p_expo
+   */
   int16_t float_to_fixed_point(float p_float_num, int p_expo);
-  
+
   int16_t array_to_int16(std::array<hal::byte, 4> const& p_array);
   std::array<hal::byte, 4> int16_to_array(int16_t p_num);
 

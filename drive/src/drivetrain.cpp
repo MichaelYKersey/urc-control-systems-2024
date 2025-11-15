@@ -69,7 +69,7 @@ chassis_velocities drivetrain::get_actual_state()
 void drivetrain::periodic()
 {
   auto console = resources::console();
-  hal::print(*console, "\nPeriodic:");
+  hal::print(*console, "Periodic:\n");
   // TODO: deal with out of tolerance modules.
 
   // refresh telemetry and state

@@ -11,7 +11,7 @@ void application()
 {
   auto clock = resources::clock();
   auto console = resources::console();
-  hal::print(*console, "\napp starting");
+  hal::print(*console, "app starting\n");
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> steer[] = {
     resources::front_left_steer(),
     resources::front_right_steer(),
@@ -24,7 +24,7 @@ void application()
     float angle = steer[i]->feedback().angle();
     steer[i]->position_control(angle, 120);
   }
-  hal::print(*console, "\nsteer locked");
+  hal::print(*console, "steer locked\n");
 
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> prop[] = {
     resources::front_left_prop(),
@@ -34,7 +34,7 @@ void application()
   };
   hal::delay(*clock, 3s);
   float rpm = 20;
-  hal::print(*console, "\nforward");
+  hal::print(*console, "forward\n");
   for (int i = 0; i < 4; i++) {
     if (i % 2) {
       prop[i]->velocity_control(rpm);
@@ -43,7 +43,7 @@ void application()
     }
   }
   hal::delay(*clock, 8s);
-  hal::print(*console, "\nbackward");
+  hal::print(*console, "backward\n");
   for (int i = 0; i < 4; i++) {
     if (i % 2) {
       prop[i]->velocity_control(-rpm);
@@ -52,7 +52,7 @@ void application()
     }
   }
   hal::delay(*clock, 8s);
-  hal::print(*console, "\nFin");
+  hal::print(*console, "Fin\n");
   for (int i = 0; i < 4; i++) {
     prop[i]->velocity_control(0);
   }

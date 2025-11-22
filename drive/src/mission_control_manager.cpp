@@ -15,18 +15,18 @@
 namespace {
 enum class can_message_id : uint32_t
 {
-  set_chassis_velocities,
-  set_chassis_velocities_reply,
-  heartbeat,
-  heartbeat_reply,
-  homing_sequence,
-  homing_sequence_reply,
-  get_offset,
-  get_offset_reply,
-  get_estimated_velocities,
-  get_estimated_velocities_reply,
-  config,
-  config_ack,
+  set_chassis_velocities=0x0C,
+  set_chassis_velocities_reply=0x0D,
+  heartbeat=0x0E,
+  heartbeat_reply=0x0F,
+  homing_sequence=0x110,
+  homing_sequence_reply=0x111,
+  get_offset=0x112,
+  get_offset_reply=0x113,
+  get_estimated_velocities=0x114,
+  get_estimated_velocities_reply=0x115,
+  config=0x119,
+  config_ack=0x11A,
 };
 }
 

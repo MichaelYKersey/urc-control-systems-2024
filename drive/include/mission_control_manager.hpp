@@ -42,8 +42,8 @@ public:
    */
   int16_t float_to_fixed_point(float p_float_num, int p_expo);
 
-  int16_t array_to_int16(std::array<hal::byte, 4> const& p_array);
-  std::array<hal::byte, 4> int16_to_array(int16_t p_num);
+  int16_t byte_array_to_int16(std::array<hal::byte, 2> p_array);
+  std::array<hal::byte, 2> int16_to_byte_array(int16_t p_num);
 
   // returns most recent velocity request
   std::optional<chassis_velocities_request> read_set_velocity_request();

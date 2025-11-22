@@ -12,6 +12,7 @@ DEMOS
     prop_motor_test
     chassis_vel_demo
     drive_cycle_demo
+    simple_can_reply_demo
     
 INCLUDES
     include

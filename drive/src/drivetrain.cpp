@@ -188,6 +188,4 @@ float drivetrain::get_steer_offset(unsigned int p_module_index) const
   }
   return m_modules->at(p_module_index)->get_steer_offset();
 }
-
-}
 }  // namespace sjsu::drive

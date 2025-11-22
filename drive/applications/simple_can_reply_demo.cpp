@@ -1,4 +1,3 @@
-#include "swerve_module.hpp"
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
 #include <libhal-exceptions/control.hpp>
@@ -9,6 +8,8 @@
 #include <mission_control_manager.hpp>
 #include <optional>
 #include <resource_list.hpp>
+#include <swerve_module.hpp>
+
 
 namespace sjsu::drive {
 

@@ -186,7 +186,7 @@ float drivetrain::get_steer_offset(unsigned int p_module_index) const
   if (p_module_index >= m_modules->size()) {
     throw hal::argument_out_of_domain(this);
   }
-  return m_modules[p_module_index].get_steer_offset();
+  return m_modules->at(p_module_index)->get_steer_offset();
 }
 
 }  // namespace sjsu::drive

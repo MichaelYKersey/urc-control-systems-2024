@@ -73,8 +73,10 @@ int16_t mission_control_manager::float_to_fixed_point(
   return static_cast<int16_t>(p_floating_point_num);
 }
 
-int16_t array_to_int16(std::array<hal::byte, 2> const& p_array);
-std::array<hal::byte, 2> int16_to_byte_array(int16_t p_num)
+int16_t mission_control_manager::byte_array_to_int16(std::array<hal::byte, 2> p_array) {
+  return (static_cast<int16_t>(p_array[0]) << 8) | static_cast<int16_t>(p_array[1]);
+}
+std::array<hal::byte, 2> mission_control_manager::int16_to_byte_array(int16_t p_num)
 {
   uint16_t unum = std::bit_cast<uint16_t>(p_num);
   std::array<hal::byte, 2> byte_array = { static_cast<uint8_t>(unum >> 8),
@@ -104,11 +106,11 @@ mission_control_manager::read_set_velocity_request()
   chassis_velocities velocities;
   auto& payload = velocity_request_message->payload;
   velocities.translation.x =
-    fixed_point_to_float(array_to_int16({ payload[0], payload[1] }), -12);
+    fixed_point_to_float(byte_array_to_int16({ payload[0], payload[1] }), -12);
   velocities.translation.x =
-    fixed_point_to_float(array_to_int16({ payload[2], payload[3] }), -12);
+    fixed_point_to_float(byte_array_to_int16({ payload[2], payload[3] }), -12);
   velocities.rotational_vel =
-    fixed_point_to_float(array_to_int16({ payload[4], payload[5] }), -6);
+    fixed_point_to_float(byte_array_to_int16({ payload[4], payload[5] }), -6);
   chassis_velocities_request cvr = { .chassis_vels = velocities,
                                      .module_conflicts =
                                        (bool)(payload[6] & 0x01) };
@@ -118,11 +120,11 @@ mission_control_manager::read_set_velocity_request()
 void mission_control_manager::reply_set_velocity_request(
   chassis_velocities_request const& p_chassis_vel)
 {
-  auto x_vel_array = int16_to_array(
+  auto x_vel_array = int16_to_byte_array(
     float_to_fixed_point(p_chassis_vel.chassis_vels.translation.x, -12));
-  auto y_vel_array = int16_to_array(
+  auto y_vel_array = int16_to_byte_array(
     float_to_fixed_point(p_chassis_vel.chassis_vels.translation.y, -12));
-  auto rot_vel_array = int16_to_array(
+  auto rot_vel_array = int16_to_byte_array(
     float_to_fixed_point(p_chassis_vel.chassis_vels.rotational_vel, -6));
   hal::can_message reply{ .id = static_cast<uint32_t>(
                             can_message_id::set_chassis_velocities_reply),
@@ -191,18 +193,18 @@ void mission_control_manager::fulfill_data_requests(
     }
     i++;
   }
-  // TODO: implement once chassis estimate velocity calculations are implemented
+  // return state_estimate
   while (true) {
     auto get_request = m_get_chassis_velocities_message_finder.find();
     if (get_request) {
       if (get_request->length == 0) {
         chassis_velocities velocity_estimate =
           p_drivetrain.get_state_estimate();
-        auto x_vel_array = int16_to_array(
+        auto x_vel_array = int16_to_byte_array(
           float_to_fixed_point(velocity_estimate.translation.x, -12));
-        auto y_vel_array = int16_to_array(
+        auto y_vel_array = int16_to_byte_array(
           float_to_fixed_point(velocity_estimate.translation.y, -12));
-        auto rot_vel_array = int16_to_array(
+        auto rot_vel_array = int16_to_byte_array(
           float_to_fixed_point(velocity_estimate.rotational_vel, -6));
         hal::can_message reply{ .id = static_cast<uint32_t>(
                                   can_message_id::set_chassis_velocities_reply),

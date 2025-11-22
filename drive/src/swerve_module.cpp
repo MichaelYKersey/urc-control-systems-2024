@@ -5,6 +5,7 @@
 #include <libhal/error.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/units.hpp>
+#include <resource_list.hpp>
 #include <swerve_module.hpp>
 
 using namespace std::chrono_literals;
@@ -43,7 +44,10 @@ bool swerve_module::stopped() const
 void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 {
   auto console = resources::console();
-  hal::print<128>(*console,"set_target_state:%f,%f\n",p_target_state.steer_angle, p_target_state.propulsion_velocity);
+  hal::print<128>(*console,
+                  "set_target_state:%f,%f\n",
+                  p_target_state.steer_angle,
+                  p_target_state.propulsion_velocity);
   if (m_steer_offset == NAN) {
     throw hal::resource_unavailable_try_again(this);
   }

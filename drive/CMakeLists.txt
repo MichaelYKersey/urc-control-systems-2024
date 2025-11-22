@@ -7,12 +7,12 @@ libhal_build_demos(
 
 DEMOS
     application
-    application_serial_commands
     sequential_homing_demo
     simple_state_set_demo
     prop_motor_test
     chassis_vel_demo
     drive_cycle_demo
+    simple_can_reply_demo
     
 INCLUDES
     include

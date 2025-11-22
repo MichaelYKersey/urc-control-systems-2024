@@ -48,8 +48,9 @@ mission_control_manager::mission_control_manager(
 {
 }
 
-float mission_control_manager::fixed_point_to_float(int16_t p_fixed_point_num,
-                                                    int p_expo)
+float mission_control_manager::fixed_point_16_to_float(
+  int16_t p_fixed_point_num,
+  int p_expo)
 {
   unsigned int shifted_expo = 1 << abs(p_expo);
   float floating_num = p_fixed_point_num;
@@ -59,7 +60,7 @@ float mission_control_manager::fixed_point_to_float(int16_t p_fixed_point_num,
     return floating_num * shifted_expo;
   }
 }
-int16_t mission_control_manager::float_to_fixed_point(
+int16_t mission_control_manager::float_to_fixed_point_16(
   float p_floating_point_num,
   int p_expo)
 {
@@ -73,13 +74,62 @@ int16_t mission_control_manager::float_to_fixed_point(
   return static_cast<int16_t>(p_floating_point_num);
 }
 
-int16_t mission_control_manager::byte_array_to_int16(std::array<hal::byte, 2> p_array) {
-  return (static_cast<int16_t>(p_array[0]) << 8) | static_cast<int16_t>(p_array[1]);
+int16_t mission_control_manager::byte_array_to_int16(
+  std::array<hal::byte, 2> p_array)
+{
+  return (static_cast<int16_t>(p_array[0]) << 8) |
+         static_cast<int16_t>(p_array[1]);
 }
-std::array<hal::byte, 2> mission_control_manager::int16_to_byte_array(int16_t p_num)
+std::array<hal::byte, 2> mission_control_manager::int16_to_byte_array(
+  int16_t p_num)
 {
   uint16_t unum = std::bit_cast<uint16_t>(p_num);
   std::array<hal::byte, 2> byte_array = { static_cast<uint8_t>(unum >> 8),
+                                          static_cast<uint8_t>(unum) };
+  return byte_array;
+}
+
+float mission_control_manager::fixed_point_32_to_float(
+  int32_t p_fixed_point_num,
+  int p_expo)
+{
+  unsigned int shifted_expo = 1 << abs(p_expo);
+  float floating_num = p_fixed_point_num;
+  if (p_expo < 0) {
+    return floating_num / shifted_expo;
+  } else {
+    return floating_num * shifted_expo;
+  }
+}
+int32_t mission_control_manager::float_to_fixed_point_32(
+  float p_floating_point_num,
+  int p_expo)
+{
+  unsigned int shifted_expo = 1 << abs(p_expo);
+  if (p_expo > 0) {
+    p_floating_point_num /= shifted_expo;
+  } else {
+    p_floating_point_num *= shifted_expo;
+  }
+  // TODO: consider implementing rounding
+  return static_cast<int32_t>(p_floating_point_num);
+}
+
+int32_t mission_control_manager::byte_array_to_int32(
+  std::array<hal::byte, 4> p_array)
+{
+  return (static_cast<int32_t>(p_array[0]) << 24) |
+         (static_cast<int32_t>(p_array[1]) << 16) |
+         (static_cast<int32_t>(p_array[2]) << 8) |
+         (static_cast<int32_t>(p_array[3]) << 0);
+}
+std::array<hal::byte, 4> mission_control_manager::int32_to_byte_array(
+  int32_t p_num)
+{
+  uint32_t unum = std::bit_cast<uint32_t>(p_num);
+  std::array<hal::byte, 4> byte_array = { static_cast<uint8_t>(unum >> 24),
+                                          static_cast<uint8_t>(unum >> 16),
+                                          static_cast<uint8_t>(unum >> 8),
                                           static_cast<uint8_t>(unum) };
   return byte_array;
 }
@@ -105,12 +155,12 @@ mission_control_manager::read_set_velocity_request()
   }
   chassis_velocities velocities;
   auto& payload = velocity_request_message->payload;
-  velocities.translation.x =
-    fixed_point_to_float(byte_array_to_int16({ payload[0], payload[1] }), -12);
-  velocities.translation.x =
-    fixed_point_to_float(byte_array_to_int16({ payload[2], payload[3] }), -12);
-  velocities.rotational_vel =
-    fixed_point_to_float(byte_array_to_int16({ payload[4], payload[5] }), -6);
+  velocities.translation.x = fixed_point_16_to_float(
+    byte_array_to_int16({ payload[0], payload[1] }), -12);
+  velocities.translation.x = fixed_point_16_to_float(
+    byte_array_to_int16({ payload[2], payload[3] }), -12);
+  velocities.rotational_vel = fixed_point_16_to_float(
+    byte_array_to_int16({ payload[4], payload[5] }), -6);
   chassis_velocities_request cvr = { .chassis_vels = velocities,
                                      .module_conflicts =
                                        (bool)(payload[6] & 0x01) };
@@ -121,11 +171,11 @@ void mission_control_manager::reply_set_velocity_request(
   chassis_velocities_request const& p_chassis_vel)
 {
   auto x_vel_array = int16_to_byte_array(
-    float_to_fixed_point(p_chassis_vel.chassis_vels.translation.x, -12));
+    float_to_fixed_point_16(p_chassis_vel.chassis_vels.translation.x, -12));
   auto y_vel_array = int16_to_byte_array(
-    float_to_fixed_point(p_chassis_vel.chassis_vels.translation.y, -12));
+    float_to_fixed_point_16(p_chassis_vel.chassis_vels.translation.y, -12));
   auto rot_vel_array = int16_to_byte_array(
-    float_to_fixed_point(p_chassis_vel.chassis_vels.rotational_vel, -6));
+    float_to_fixed_point_16(p_chassis_vel.chassis_vels.rotational_vel, -6));
   hal::can_message reply{ .id = static_cast<uint32_t>(
                             can_message_id::set_chassis_velocities_reply),
                           .length = 7,
@@ -178,15 +228,17 @@ void mission_control_manager::fulfill_data_requests(
   while (offsets_requested >> i) {
     if ((offsets_requested >> i) & 1) {
       // send message
-      std::array<hal::byte, 2> offset_bytes =
-        int16_to_byte_array(p_drivetrain.get_steer_offset(i));
+      std::array<hal::byte, 4> offset_bytes = int32_to_byte_array(
+        float_to_fixed_point_32(p_drivetrain.get_steer_offset(i), -22));
       hal::can_message
         offset_request_reply = { .id = static_cast<uint32_t>(
                                    can_message_id::heartbeat_reply),
-                                 .length = 3,
+                                 .length = 5,
                                  .payload = {
                                    offset_bytes[0],
                                    offset_bytes[1],
+                                   offset_bytes[2],
+                                   offset_bytes[3],
                                    i,
                                  } };
       m_can_transceiver->send(offset_request_reply);
@@ -201,11 +253,11 @@ void mission_control_manager::fulfill_data_requests(
         chassis_velocities velocity_estimate =
           p_drivetrain.get_state_estimate();
         auto x_vel_array = int16_to_byte_array(
-          float_to_fixed_point(velocity_estimate.translation.x, -12));
+          float_to_fixed_point_16(velocity_estimate.translation.x, -12));
         auto y_vel_array = int16_to_byte_array(
-          float_to_fixed_point(velocity_estimate.translation.y, -12));
+          float_to_fixed_point_16(velocity_estimate.translation.y, -12));
         auto rot_vel_array = int16_to_byte_array(
-          float_to_fixed_point(velocity_estimate.rotational_vel, -6));
+          float_to_fixed_point_16(velocity_estimate.rotational_vel, -6));
         hal::can_message reply{ .id = static_cast<uint32_t>(
                                   can_message_id::set_chassis_velocities_reply),
                                 .length = 6,

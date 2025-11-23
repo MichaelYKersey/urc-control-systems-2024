@@ -36,15 +36,15 @@ mission_control_manager::mission_control_manager(
   hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver)
   : m_can_transceiver(p_can_transceiver)
   , m_heartbeat_message_finder(
-      hal::can_message_finder(*m_can_transceiver, 0x00))
+      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::heartbeat)))
   , m_set_chassis_velocities_message_finder(
-      hal::can_message_finder(*m_can_transceiver, 0x00))
+      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::set_chassis_velocities)))
   , m_get_chassis_velocities_message_finder(
-      hal::can_message_finder(*m_can_transceiver, 0x00))
+      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::get_estimated_velocities)))
   , m_homing_request_message_finder(
-      hal::can_message_finder(*m_can_transceiver, 0x00))
+      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::homing_sequence)))
   , m_get_offset_message_finder(
-      hal::can_message_finder(*m_can_transceiver, 0x00))
+      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::get_offset)))
 {
 }
 
@@ -194,7 +194,7 @@ bool mission_control_manager::read_homing_request()
 {
   bool requested = false;
   while (true) {
-    std::optional<hal::can_message> message = m_heartbeat_message_finder.find();
+    std::optional<hal::can_message> message = m_homing_request_message_finder.find();
     if (not message) {
       if (message->length == 0) {
         requested = true;

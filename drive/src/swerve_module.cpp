@@ -29,6 +29,7 @@ swerve_module::swerve_module(
 
 void swerve_module::stop()
 {
+  m_homing = false;
   m_steer_motor->velocity_control(0);
   m_propulsion_motor->velocity_control(0);
 }
@@ -42,6 +43,7 @@ bool swerve_module::stopped() const
 
 void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 {
+  m_homing = false;
   auto console = resources::console();
   hal::print<128>(*console,"set_target_state:%f,%f\n",p_target_state.steer_angle, p_target_state.propulsion_velocity);
   if (m_steer_offset == NAN) {
@@ -116,20 +118,34 @@ void swerve_module::hard_home()
 {
   auto console = resources::console();
   hal::print(*console, "starting hard home changed\n");
+  home_start();
+  while (m_homing) {
+    hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
+    parallel_home_periodic();
+  }
+}
+void swerve_module::home_start()
+{
   m_steer_motor->feedback_request(
     hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
+  auto console = resources::console();
   m_steer_motor->velocity_control(0);  // dummy message
   hal::print<128>(*console, "Start level: %d\n", m_limit_switch->level());
-  [[__maybe_unused__]] float start_angle = m_steer_motor->feedback().angle();
+  [[maybe_unused]] float start_angle = m_steer_motor->feedback().angle();
   if (settings.home_clockwise) {
     m_steer_motor->velocity_control(-1);
   } else {
     m_steer_motor->velocity_control(1);
   }
-  // while (m_limit_switch->level()) {
-  //   hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
-  // }
+  m_homing = true;
+}
+void swerve_module::parallel_home_periodic()
+{
+  if (!limit_switch_pressed()) {
+    return;
+  }
   m_steer_motor->velocity_control(0);  // stops
+  auto console = resources::console();
   hal::print<128>(*console, "Final level: %d\n", m_limit_switch->level());
 
   m_steer_motor->feedback_request(
@@ -141,6 +157,16 @@ void swerve_module::hard_home()
   // hal::print<128>(
   //   *console, "fin position: %f\n",
   //   refresh_actual_state_cache().steer_angle);
+  m_homing = false;
+}
+bool swerve_module::homing()
+{
+  return m_homing;
+}
+bool swerve_module::limit_switch_pressed()
+{
+  // return m_limit_switch->level();
+  return true;
 }
 
 }  // namespace sjsu::drive

@@ -19,6 +19,7 @@ drivetrain::drivetrain(
 bool drivetrain::set_target_state(chassis_velocities p_target_state,
                                   bool p_resolve_module_conflicts)
 {
+  m_homing = false;
   m_target_state = p_target_state;
   m_resolve_module_conflicts = p_resolve_module_conflicts;
   // find final target state
@@ -72,12 +73,24 @@ void drivetrain::periodic()
   hal::print(*console, "Periodic:\n");
   // TODO: deal with out of tolerance modules.
 
-  // refresh telemetry and state
+  // refresh telemetry
   refresh_telemetry();
+
+  //deal with homing
+  if (m_homing) {
+    for (auto& m : *m_modules) {
+      m->parallel_home_periodic();
+    }
+    if (homed()) {
+      m_homing = false;
+    }
+  }
+
   bool drive_stopped = stopped();
   if (drive_stopped) {
     m_stopping = false;
   }
+
 
   std::array<swerve_module_state, module_count> next_target_states;
   // if stopping slow down
@@ -144,6 +157,7 @@ void drivetrain::refresh_telemetry()
 
 void drivetrain::stop()
 {
+  m_homing = false;
   for (auto& i : *m_modules) {
     i->stop();
   }
@@ -177,6 +191,31 @@ void drivetrain::hard_home()
   for (auto& m : *m_modules) {
     m->hard_home();
   }
+}
+void drivetrain::start_parallel_home()
+{
+  m_homing = true;
+  for (auto& m : *m_modules) {
+    m->home_start();
+  }
+}
+bool drivetrain::homed()
+{
+  for (auto& m : *m_modules) {
+    if (m->get_steer_offset() == NAN) {
+      return false;
+    }
+  }
+  return true;
+}
+bool drivetrain::homing()
+{
+  for (auto& m : *m_modules) {
+    if (m->homing()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace sjsu::drive

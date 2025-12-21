@@ -106,6 +106,11 @@ public:
    * interupted)
    */
   void hard_home();
+  void home_start();
+  void parallel_home_periodic();
+  bool homing();
+  bool limit_switch_pressed();
+  float get_steer_offset();
 
 private:
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_steer_motor;
@@ -117,7 +122,6 @@ private:
   // the position reading when facing forward using the interface for the steer
   // motor (NAN indicates it has not been homed before)
   hal::degrees m_steer_offset = NAN;
-
-private:
+  bool m_homing = false;
 };
 }  // namespace sjsu::drive

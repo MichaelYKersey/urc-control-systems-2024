@@ -61,6 +61,20 @@ public:
    * interupted)
    */
   void hard_home();
+  /**
+   * @brief run homing with all modules simultaneously
+   */
+  void start_parallel_home();
+  /**
+   * @brief if a homing sequence has been completed at least once
+   */
+  bool homed();
+  /**
+   * @brief in the process of homing
+   */
+  bool homing();
+
+  float get_steer_offset(unsigned int p_module_index) const;
 
 private:
   hal::v5::strong_ptr<
@@ -72,6 +86,7 @@ private:
   chassis_velocities m_target_state;
   bool m_resolve_module_conflicts = false;
   bool m_stopping = false;
+  bool m_homing = false;
 };
 
 }  // namespace sjsu::drive

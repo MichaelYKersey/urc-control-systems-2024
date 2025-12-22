@@ -6,9 +6,11 @@
         "ring-span-lite/0.7.0#73c13ef86652f52ad6b52048b15af784%1716299614.015",
         "prebuilt-picolibc/14.2#197a708367ee7d3b9e9057bf9bd0eaa2%1747924705.981",
         "libhal-util/5.8.1#dca6ef7baf4f47bcc0eba9baf3c7dbf1%1761614359.953",
+        "libhal-sensor/1.1.2#9f5de378c1730a2e9b135714fcfe9465%1751648116.581",
         "libhal-mock/4.0.0#e2a2cc593adc03806c6a8b80c5a89638%1715616381.717",
         "libhal-exceptions/1.5.0#5e72e396cbd871411ac3def36522350d%1756855565.289",
         "libhal-arm-mcu/1.19.1#ae2156dc7626abfba331a61b3cfcc940%1762439331.637",
+        "libhal-actuator/1.2.3#c9604e30af20eb688d32b6a6440ad6ea%1761181221.054",
         "libhal/4.18.1#8d15efecea9aadb357c23770627b0341%1761511486.387",
         "boost-ext-ut/2.1.0#aec3873a3273d96f85093971c6c8b206%1749912871.352",
         "boost-ext-ut/1.1.9#09b31ef61352d71b2a4374caa826d485%1749912876.292"

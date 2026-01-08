@@ -20,20 +20,26 @@ drivetrain::drivetrain(
 bool drivetrain::set_target_state(chassis_velocities p_target_state,
                                   bool p_resolve_module_conflicts)
 {
+  m_stopping = false;
   m_target_state = p_target_state;
   m_resolve_module_conflicts = p_resolve_module_conflicts;
   // find final target state
   std::array<vector2d, module_count> vectors =
     chassis_velocities_to_module_vectors(m_target_state, *m_modules);
-  bool can_reach = true;
-  auto console = resources::console();
+  [[maybe_unused]]auto console = resources::console();
   for (vector2d v : vectors) {
     hal::print<128>(*console, "vec:%f,%f\n", v.x, v.y);
   }
 
+  // calc if final state is in range
+  bool can_reach = true;
   for (int i = 0; can_reach && i < module_count; i++) {
-    m_final_target_module_states[i] =
-      calculate_closest_state(*(m_modules->at(i)), vectors[i]);
+    if (vector2d::length_squared(vectors[i]) == 0) {
+      m_final_target_module_states[i] = swerve_module_state(NAN, 0);
+    } else {
+      m_final_target_module_states[i] =
+        calculate_closest_state(*(m_modules->at(i)), vectors[i]);
+    }
     // abort if can't reach
     if (!m_modules->at(i)->can_reach_state(m_final_target_module_states[i])) {
       can_reach = false;
@@ -43,18 +49,30 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   // if can't reach target then set 0 or freest based on if resolve conflicts is
   // on
   if (!can_reach) {
+    m_stopping = true;
     if (m_resolve_module_conflicts) {
       for (int i = 0; i < module_count; i++) {
-        m_final_target_module_states[i] =
-          calculate_freest_state(*(m_modules->at(i)), vectors[i]);
+          m_final_target_module_states[i] =
+            calculate_freest_state(*(m_modules->at(i)), vectors[i]);
       }
     } else {
       for (int i = 0; i < module_count; i++) {
         m_final_target_module_states[i] =
           m_modules->at(i)->get_actual_state_cache();
+        m_final_target_module_states[i].steer_angle =
+          std::clamp(m_final_target_module_states[i].steer_angle,
+                     m_modules->at(i)->settings.min_angle,
+                     m_modules->at(i)->settings.max_angle);
         m_final_target_module_states[i].propulsion_velocity = 0;
       }
     }
+  }
+  if (m_target_state == chassis_velocities({0,0},0)) {
+    m_stopping = true;
+  }
+  for (swerve_module_state s : m_final_target_module_states) {
+    hal::print<128>(
+      *console, "final_state:%f,%f\n", s.steer_angle, s.propulsion_velocity);
   }
   return can_reach;
 }
@@ -70,7 +88,7 @@ chassis_velocities drivetrain::get_state_estimate() const
 
 void drivetrain::periodic()
 {
-  auto console = resources::console();
+  [[maybe_unused]]auto console = resources::console();
   hal::print(*console, "Periodic:\n");
   // TODO: deal with out of tolerance modules.
 
@@ -84,6 +102,7 @@ void drivetrain::periodic()
   std::array<swerve_module_state, module_count> next_target_states;
   // if stopping slow down
   if (m_stopping) {
+    hal::print(*console, "stopping\n");
     // fill array with 0 vel
     for (int i = 0; i < module_count; i++) {
       // get current angle and no propulsion
@@ -95,6 +114,7 @@ void drivetrain::periodic()
   }
   // stopped and not aligned with target_final state align
   else if (drive_stopped && !aligned()) {
+    hal::print(*console, "stopped & aligning\n");
     // fill array with 0 vel states and target angles
     for (int i = 0; i < module_count; i++) {
       next_target_states[i].steer_angle =
@@ -104,6 +124,7 @@ void drivetrain::periodic()
   }
   // else interpolate directly (but check not already at target state)
   else {
+    hal::print(*console, "regular:");
     // return early if target states already final to not clutter the CAN bus
     bool target_matching = true;
     for (int i = 0; i < module_count; i++) {
@@ -116,8 +137,10 @@ void drivetrain::periodic()
       }
     }
     if (target_matching) {
+      hal::print(*console, "skip CAN messages already at final state\n");
       return;
     } else {
+      hal::print(*console, "interpolating\n");
       next_target_states = m_final_target_module_states;
     }
   }

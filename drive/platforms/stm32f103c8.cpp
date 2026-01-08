@@ -44,7 +44,6 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/units.hpp>
 
-#include <limits>
 #include <memory_resource>
 #include <resource_list.hpp>
 #include <swerve_module.hpp>

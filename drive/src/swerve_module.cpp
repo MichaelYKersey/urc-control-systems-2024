@@ -37,8 +37,19 @@ void swerve_module::stop()
 
 bool swerve_module::stopped() const
 {
-  return m_target_state.propulsion_velocity == 0 &&
-         std::abs(m_actual_state_cache.steer_angle) <=
+  auto console = resources::console();
+  hal::print(*console, "checking stop\n");
+  hal::print<64>(
+    *console, "target_vel:%f\n", m_target_state.propulsion_velocity);
+  hal::print<64>(*console,
+                 "target_vel == 0.0f:%d\n",
+                 m_target_state.propulsion_velocity == 0.0f);
+  hal::print<64>(*console,
+                 "ster:%d\n",
+                 std::abs(m_actual_state_cache.propulsion_velocity) <=
+                   settings.velocity_tolerance);
+  return m_target_state.propulsion_velocity == 0.0f &&
+         std::abs(m_actual_state_cache.propulsion_velocity) <=
            settings.velocity_tolerance;
 }
 
@@ -52,10 +63,23 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   if (m_steer_offset == NAN) {
     throw hal::resource_unavailable_try_again(this);
   }
-  if (!can_reach_state(m_target_state)) {
-    throw hal::argument_out_of_domain(this);
+  if (p_target_state.steer_angle == NAN &&
+      p_target_state.propulsion_velocity == 0) {
+    stop();
   }
-  m_target_state = p_target_state;
+  if (!valid_interpolation(m_target_state)) {
+    hal::print(*console, "invalid interp\n");
+    throw hal::argument_out_of_domain(this);
+  } else {
+    m_target_state = p_target_state;
+    // cap valid interpolations
+    m_target_state.steer_angle = std::clamp(
+      m_target_state.steer_angle, settings.min_angle, settings.max_angle);
+    m_target_state.propulsion_velocity =
+      std::clamp(m_target_state.propulsion_velocity,
+                 -settings.max_speed,
+                 settings.max_speed);
+  }
   // auto console = resources::console();
   // m_steer_motor->feedback_request(
   //   hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
@@ -78,8 +102,25 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 bool swerve_module::can_reach_state(swerve_module_state const& p_state) const
 {
   return ((p_state.propulsion_velocity <= std::abs(settings.max_speed)) &&
-          (p_state.steer_angle >= settings.min_angle) &&
-          (p_state.steer_angle <= settings.max_angle));
+          (p_state.steer_angle == NAN ||
+           (p_state.steer_angle >= settings.min_angle &&
+            p_state.steer_angle <= settings.max_angle)));
+}
+bool swerve_module::valid_interpolation(
+  swerve_module_state const& p_state) const
+{
+  return ((p_state.steer_angle == NAN ||
+           p_state.propulsion_velocity <= std::abs(settings.max_speed) ||
+           (p_state.propulsion_velocity >= 0 &&
+            p_state.propulsion_velocity <=
+              m_actual_state_cache.propulsion_velocity) ||
+           (p_state.propulsion_velocity <= 0 &&
+            p_state.propulsion_velocity >=
+              m_actual_state_cache.propulsion_velocity)) &&
+          (p_state.steer_angle >= settings.min_angle ||
+           p_state.steer_angle >= m_actual_state_cache.steer_angle) &&
+          (p_state.steer_angle <= settings.max_angle ||
+           p_state.steer_angle <= m_actual_state_cache.steer_angle));
 }
 
 swerve_module_state swerve_module::get_actual_state_cache() const
@@ -98,6 +139,11 @@ swerve_module_state swerve_module::refresh_actual_state_cache()
   if (settings.drive_forward_clockwise) {
     m_actual_state_cache.propulsion_velocity *= -1;
   }
+  auto console = resources::console();
+  hal::print<64>(*console,
+                 "actual_state: %f,%f\n",
+                 m_actual_state_cache.steer_angle,
+                 m_actual_state_cache.propulsion_velocity);
   return m_actual_state_cache;
 }
 

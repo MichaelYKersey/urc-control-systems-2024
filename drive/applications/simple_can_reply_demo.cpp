@@ -19,12 +19,13 @@ void application()
   auto clock = resources::clock();
   auto console = resources::console();
   mission_control_manager mcm(resources::can_transceiver());
-
+  hal::print(*console, "appstart\n");
   while (true) {
+    // hal::print(*console, "scanning\n");
     hal::u64 frame_end = hal::future_deadline(*clock, cycle_time);
 
-    bool home_req = mcm.read_homing_request();
-    std::optional<chassis_velocities_request> cvr =
+    [[maybe_unused]]bool home_req = mcm.read_homing_request();
+    [[maybe_unused]]std::optional<chassis_velocities_request> cvr =
       mcm.read_set_velocity_request();
     if (cvr) {
       mcm.reply_set_velocity_request(cvr.value());
@@ -39,7 +40,7 @@ void application()
       mcm.reply_homing_request();
     }
 
-    mcm.reply_heartbeat();
+    // mcm.reply_heartbeat();
 
     while (clock->uptime() < frame_end)
       ;

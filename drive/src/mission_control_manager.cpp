@@ -1,9 +1,11 @@
+#include "resource_list.hpp"
 #include "swerve_module.hpp"
 #include <array>
 #include <bit>
 #include <cstdint>
 #include <libhal-util/bit.hpp>
 #include <libhal-util/can.hpp>
+#include <libhal-util/serial.hpp>
 #include <libhal/can.hpp>
 #include <libhal/units.hpp>
 #include <mission_control_manager.hpp>
@@ -143,6 +145,8 @@ mission_control_manager::read_set_velocity_request()
     std::optional<hal::can_message> check_velocity_request_message =
       m_set_chassis_velocities_message_finder.find();
     if (check_velocity_request_message) {
+      auto console = resources::console();
+      hal::print(*console,"\nmessage passed===============================================");
       if (check_velocity_request_message->length == 7) {
         velocity_request_message = check_velocity_request_message;
       }
@@ -195,7 +199,9 @@ bool mission_control_manager::read_homing_request()
   bool requested = false;
   while (true) {
     std::optional<hal::can_message> message = m_homing_request_message_finder.find();
-    if (not message) {
+    if (message) {
+      auto console = resources::console();
+      hal::print(*console,"\nmessage passed===============================================");
       if (message->length == 0) {
         requested = true;
       }

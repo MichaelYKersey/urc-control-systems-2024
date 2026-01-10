@@ -47,6 +47,7 @@
 #include <memory_resource>
 #include <resource_list.hpp>
 #include <swerve_module.hpp>
+#include <utility>
 
 namespace sjsu::drive::resources {
 using namespace hal::literals;
@@ -111,6 +112,7 @@ hal::v5::strong_ptr<hal::output_pin> status_led()
 }
 
 hal::v5::optional_ptr<hal::stm32f1::can_peripheral_manager_v2> can_manager;
+std::array<hal::v5::optional_ptr<hal::can_mask_filter>,2> can_mask;
 void initialize_can()
 {
   if (not can_manager) {
@@ -125,6 +127,13 @@ void initialize_can()
         std::chrono::milliseconds(1),
         hal::stm32f1::can_pins::pb9_pb8);
     can_manager->baud_rate(1.0_MHz);
+    auto f = hal::acquire_can_mask_filter(driver_allocator(),can_manager);
+    hal::can_mask_filter::pair p;
+    p.id = 0;
+    p.mask = 0;
+    can_mask[0] = f[0];
+    can_mask[1] = f[1];
+    can_mask.at(0)->allow(p);
   }
 }
 

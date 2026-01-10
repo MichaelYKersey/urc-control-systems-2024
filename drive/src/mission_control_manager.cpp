@@ -17,18 +17,18 @@
 namespace {
 enum class can_message_id : uint32_t
 {
-  set_chassis_velocities=0x0C,
-  set_chassis_velocities_reply=0x0D,
-  heartbeat=0x0E,
-  heartbeat_reply=0x0F,
-  homing_sequence=0x110,
-  homing_sequence_reply=0x111,
-  get_offset=0x112,
-  get_offset_reply=0x113,
-  get_estimated_velocities=0x114,
-  get_estimated_velocities_reply=0x115,
-  config=0x119,
-  config_ack=0x11A,
+  set_chassis_velocities = 0x0C,
+  set_chassis_velocities_reply = 0x0D,
+  heartbeat = 0x0E,
+  heartbeat_reply = 0x0F,
+  homing_sequence = 0x110,
+  homing_sequence_reply = 0x111,
+  get_offset = 0x112,
+  get_offset_reply = 0x113,
+  get_estimated_velocities = 0x114,
+  get_estimated_velocities_reply = 0x115,
+  config = 0x119,
+  config_ack = 0x11A,
 };
 }
 
@@ -38,15 +38,20 @@ mission_control_manager::mission_control_manager(
   hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver)
   : m_can_transceiver(p_can_transceiver)
   , m_heartbeat_message_finder(
-      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::heartbeat)))
-  , m_set_chassis_velocities_message_finder(
-      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::set_chassis_velocities)))
-  , m_get_chassis_velocities_message_finder(
-      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::get_estimated_velocities)))
-  , m_homing_request_message_finder(
-      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::homing_sequence)))
-  , m_get_offset_message_finder(
-      hal::can_message_finder(*m_can_transceiver, static_cast<uint32_t>(can_message_id::get_offset)))
+      hal::can_message_finder(*m_can_transceiver,
+                              static_cast<uint32_t>(can_message_id::heartbeat)))
+  , m_set_chassis_velocities_message_finder(hal::can_message_finder(
+      *m_can_transceiver,
+      static_cast<uint32_t>(can_message_id::set_chassis_velocities)))
+  , m_get_chassis_velocities_message_finder(hal::can_message_finder(
+      *m_can_transceiver,
+      static_cast<uint32_t>(can_message_id::get_estimated_velocities)))
+  , m_homing_request_message_finder(hal::can_message_finder(
+      *m_can_transceiver,
+      static_cast<uint32_t>(can_message_id::homing_sequence)))
+  , m_get_offset_message_finder(hal::can_message_finder(
+      *m_can_transceiver,
+      static_cast<uint32_t>(can_message_id::get_offset)))
 {
 }
 
@@ -140,13 +145,15 @@ std::array<hal::byte, 4> mission_control_manager::int32_to_byte_array(
 std::optional<chassis_velocities_request>
 mission_control_manager::read_set_velocity_request()
 {
+  auto console = resources::console();
   std::optional<hal::can_message> velocity_request_message;
   while (true) {
     std::optional<hal::can_message> check_velocity_request_message =
       m_set_chassis_velocities_message_finder.find();
     if (check_velocity_request_message) {
-      auto console = resources::console();
-      hal::print(*console,"\nmessage passed===============================================");
+      // hal::print(
+      //   *console,
+      //   "\nmessage passed===============================================");
       if (check_velocity_request_message->length == 7) {
         velocity_request_message = check_velocity_request_message;
       }
@@ -161,25 +168,30 @@ mission_control_manager::read_set_velocity_request()
   auto& payload = velocity_request_message->payload;
   velocities.translation.x = fixed_point_16_to_float(
     byte_array_to_int16({ payload[0], payload[1] }), -12);
-  velocities.translation.x = fixed_point_16_to_float(
+  velocities.translation.y = fixed_point_16_to_float(
     byte_array_to_int16({ payload[2], payload[3] }), -12);
   velocities.rotational_vel = fixed_point_16_to_float(
     byte_array_to_int16({ payload[4], payload[5] }), -6);
   chassis_velocities_request cvr = { .chassis_vels = velocities,
                                      .module_conflicts =
                                        (bool)(payload[6] & 0x01) };
+  hal::print<64>(*console,
+                 "\n%x,%x,%x",
+                 byte_array_to_int16({ payload[0], payload[1] }),
+                 byte_array_to_int16({ payload[2], payload[3] }),
+                 byte_array_to_int16({ payload[4], payload[5] }));
   return cvr;
 }
 
 void mission_control_manager::reply_set_velocity_request(
-  chassis_velocities_request const& p_chassis_vel)
+  chassis_velocities_request const& p_chassis_vel_req)
 {
   auto x_vel_array = int16_to_byte_array(
-    float_to_fixed_point_16(p_chassis_vel.chassis_vels.translation.x, -12));
+    float_to_fixed_point_16(p_chassis_vel_req.chassis_vels.translation.x, -12));
   auto y_vel_array = int16_to_byte_array(
-    float_to_fixed_point_16(p_chassis_vel.chassis_vels.translation.y, -12));
+    float_to_fixed_point_16(p_chassis_vel_req.chassis_vels.translation.y, -12));
   auto rot_vel_array = int16_to_byte_array(
-    float_to_fixed_point_16(p_chassis_vel.chassis_vels.rotational_vel, -6));
+    float_to_fixed_point_16(p_chassis_vel_req.chassis_vels.rotational_vel, -6));
   hal::can_message reply{ .id = static_cast<uint32_t>(
                             can_message_id::set_chassis_velocities_reply),
                           .length = 7,
@@ -189,7 +201,7 @@ void mission_control_manager::reply_set_velocity_request(
                                        y_vel_array[1],
                                        rot_vel_array[0],
                                        rot_vel_array[1],
-                                       p_chassis_vel.module_conflicts } };
+                                       p_chassis_vel_req.module_conflicts } };
   m_can_transceiver->send(reply);
 }
 
@@ -198,10 +210,12 @@ bool mission_control_manager::read_homing_request()
 {
   bool requested = false;
   while (true) {
-    std::optional<hal::can_message> message = m_homing_request_message_finder.find();
+    std::optional<hal::can_message> message =
+      m_homing_request_message_finder.find();
     if (message) {
       auto console = resources::console();
-      hal::print(*console,"\nmessage passed===============================================");
+      // hal::print(*console,"\nmessage
+      // passed===============================================");
       if (message->length == 0) {
         requested = true;
       }
@@ -292,9 +306,11 @@ void mission_control_manager::clear_heartbeat_requests()
 }
 void mission_control_manager::reply_heartbeat()
 {
-  m_can_transceiver->send(
-    { .id = static_cast<uint32_t>(can_message_id::heartbeat_reply),
-      .length = 0 });
+  if (m_heartbeat_message_finder.find()) {
+    m_can_transceiver->send(
+      { .id = static_cast<uint32_t>(can_message_id::heartbeat_reply),
+        .length = 0 });
+  }
 }
 
 }  // namespace sjsu::drive

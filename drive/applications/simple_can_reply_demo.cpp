@@ -18,11 +18,24 @@ void application()
   constexpr hal::time_duration cycle_time = 50ms;
   auto clock = resources::clock();
   auto console = resources::console();
-  mission_control_manager mcm(resources::can_transceiver());
+  auto can_transceiver = resources::can_transceiver();
+  mission_control_manager mcm(can_transceiver);
   hal::print(*console, "appstart\n");
+  // [[maybe_unused]] auto
+  [[maybe_unused]]auto finder =  hal::can_message_finder(*can_transceiver,0x00);
   while (true) {
     // hal::print(*console, "scanning\n");
     hal::u64 frame_end = hal::future_deadline(*clock, cycle_time);
+    
+    if (finder.find()) {
+      hal::print(*console, "\nfound==================================================================\n");
+    } else {
+      // hal::print(*console,"w");
+    }
+    // can_transceiver->send({.id=0xD,.length=0});
+
+
+
 
     [[maybe_unused]]bool home_req = mcm.read_homing_request();
     [[maybe_unused]]std::optional<chassis_velocities_request> cvr =
@@ -30,17 +43,17 @@ void application()
     if (cvr) {
       mcm.reply_set_velocity_request(cvr.value());
       hal::print<64>(*console,
-                     "set vel: %f, %f, %f, %d\n",
+                     "\nset vel: %f, %f, %f, %d\n",
                      cvr->chassis_vels.translation.x,
                      cvr->chassis_vels.translation.y,
                      cvr->chassis_vels.rotational_vel,
                      cvr->module_conflicts);
     } else if (home_req) {
-      hal::print(*console, "homing\n");
+      hal::print(*console, "\nhoming\n");
       mcm.reply_homing_request();
     }
 
-    // mcm.reply_heartbeat();
+    mcm.reply_heartbeat();
 
     while (clock->uptime() < frame_end)
       ;

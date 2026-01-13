@@ -221,28 +221,69 @@ float swerve_module::get_steer_offset()
   return m_steer_offset;
 }
 
+constexpr int can_attempts = 3;
 hal::degrees swerve_module::get_steer_motor_position()
 {
-  m_steer_motor->feedback_request(
-    hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
-  return m_steer_motor->feedback().angle();
+  int attempts = can_attempts;
+  while (true) {
+    try {
+      m_steer_motor->feedback_request(
+        hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
+      return m_steer_motor->feedback().angle();
+    } catch (hal::exception e){
+      attempts--;
+      if (attempts <= 0) throw e;
+    }
+  }
 }
 void swerve_module::set_steer_motor_position(hal::degrees p_position)
 {
-  m_steer_motor->position_control(p_position, 30);
+  int attempts = can_attempts;
+  while (true) {
+    try {
+      m_steer_motor->position_control(p_position, 30);
+    } catch (hal::exception e) {
+      attempts--;
+      if (attempts <= 0) throw e;
+    }
+  }
 }
 void swerve_module::set_steer_motor_velocity(float p_velocity)
 {
-  m_steer_motor->velocity_control(p_velocity);
+  int attempts = can_attempts;
+  while (true) {
+    try {
+      m_steer_motor->velocity_control(p_velocity);
+    } catch (hal::exception e) {
+      attempts--;
+      if (attempts <= 0) throw e;
+    }
+  }
 }
 
 float swerve_module::get_prop_motor_velocity()
 {
-  return m_propulsion_motor->feedback().speed();
+  int attempts = can_attempts;
+  while (true) {
+    try {
+      return m_propulsion_motor->feedback().speed();
+    } catch (hal::exception e) {
+      attempts--;
+      if (attempts <= 0) throw e;
+    }
+  }
 }
 void swerve_module::set_prop_motor_velocity(float p_velocity)
 {
-  m_propulsion_motor->velocity_control(p_velocity);
+  int attempts = can_attempts;
+  while (true) {
+    try {
+      m_propulsion_motor->velocity_control(p_velocity);
+    } catch (hal::exception e) {
+      attempts--;
+      if (attempts <= 0) throw e;
+    }
+  }
 }
 
 }  // namespace sjsu::drive

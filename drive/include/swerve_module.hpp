@@ -110,8 +110,15 @@ public:
    */
   void hard_home();
   float get_steer_offset();
-
+  
 private:
+  hal::degrees get_steer_motor_position();
+  void set_steer_motor_position(hal::degrees p_position);
+  void set_steer_motor_velocity(float p_velocity);
+  
+  float get_prop_motor_velocity();
+  void set_prop_motor_velocity(float p_velocity);
+
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_steer_motor;
   hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> m_propulsion_motor;
   hal::v5::strong_ptr<hal::input_pin> m_limit_switch;

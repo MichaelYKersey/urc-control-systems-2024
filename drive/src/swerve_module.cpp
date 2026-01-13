@@ -31,23 +31,25 @@ swerve_module::swerve_module(
 
 void swerve_module::stop()
 {
-  m_steer_motor->velocity_control(0);
-  m_propulsion_motor->velocity_control(0);
+  set_steer_motor_velocity(0);
+  set_prop_motor_velocity(0);
 }
 
 bool swerve_module::stopped() const
 {
-  // auto console = resources::console();
-  // hal::print(*console, "checking stop\n");
-  // hal::print<64>(
-  //   *console, "target_vel:%f\n", m_target_state.propulsion_velocity);
-  // hal::print<64>(*console,
-  //                "target_vel == 0.0f:%d\n",
-  //                m_target_state.propulsion_velocity == 0.0f);
-  // hal::print<64>(*console,
-  //                "ster:%d\n",
-  //                std::abs(m_actual_state_cache.propulsion_velocity) <=
-  //                  settings.velocity_tolerance);
+  /*
+  auto console = resources::console();
+  hal::print(*console, "checking stop\n");
+  hal::print<64>(
+    *console, "target_vel:%f\n", m_target_state.propulsion_velocity);
+  hal::print<64>(*console,
+                 "target_vel == 0.0f:%d\n",
+                 m_target_state.propulsion_velocity == 0.0f);
+  hal::print<64>(*console,
+                 "ster:%d\n",
+                 std::abs(m_actual_state_cache.propulsion_velocity) <=
+                   settings.velocity_tolerance);
+  */
   return m_target_state.propulsion_velocity == 0.0f &&
          std::abs(m_actual_state_cache.propulsion_velocity) <=
            settings.velocity_tolerance;
@@ -80,24 +82,19 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
                  -settings.max_speed,
                  settings.max_speed);
   }
-  // m_steer_motor->feedback_request(
-  //   hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
-  // hal::print<128>(
-    // *console, "Cur angle: %f\n", m_steer_motor->feedback().angle());
+  hal::print<128>(*console, "Cur angle: %f\n", get_steer_motor_position());
   hal::print<128>(*console,
                   "Target angle: %f\n",
                   m_target_state.steer_angle + m_steer_offset);
-  // m_steer_motor->position_control(m_steer_motor->feedback().angle(), 1);
   hal::print(*console, "commanding steer,");
-  m_steer_motor->position_control(m_target_state.steer_angle + m_steer_offset,
-                                  30);
+  set_steer_motor_position(m_target_state.steer_angle + m_steer_offset);
   hal::print(*console, "command acked,");
   hal::rpm velocity = m_target_state.propulsion_velocity * settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
     velocity *= -1;
   }
   hal::print(*console, "commanding prop,");
-  m_propulsion_motor->velocity_control(velocity);
+  set_prop_motor_velocity(velocity);
   hal::print(*console, "commanding steer,\n");
 }
 
@@ -134,14 +131,12 @@ swerve_module_state swerve_module::refresh_actual_state_cache()
 {
   auto console = resources::console();
   hal::print(*console, "actual_state:");
-  m_steer_motor->feedback_request(
-    hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
   m_actual_state_cache.steer_angle =
-    m_steer_motor->feedback().angle() - m_steer_offset;
+    get_steer_motor_position() - m_steer_offset;
   hal::print<64>(*console, "%f,", m_actual_state_cache.steer_angle);
 
   m_actual_state_cache.propulsion_velocity =
-    m_propulsion_motor->feedback().speed() / settings.mps_to_rpm;
+    get_prop_motor_velocity() / settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
     m_actual_state_cache.propulsion_velocity *= -1;
   }
@@ -198,25 +193,21 @@ void swerve_module::hard_home()
 {
   auto console = resources::console();
   hal::print(*console, "starting hard home changed\n");
-  m_steer_motor->feedback_request(
-    hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
-  m_steer_motor->velocity_control(0);  // dummy message
+  set_steer_motor_velocity(0);  // dummy message
   hal::print<128>(*console, "Start level: %d\n", m_limit_switch->level());
-  [[__maybe_unused__]] float start_angle = m_steer_motor->feedback().angle();
+  [[__maybe_unused__]] float start_angle = get_steer_motor_position();
   if (settings.home_clockwise) {
-    m_steer_motor->velocity_control(-1);
+    set_steer_motor_velocity(-1);
   } else {
-    m_steer_motor->velocity_control(1);
+    set_steer_motor_velocity(1);
   }
   // while (m_limit_switch->level()) {
   //   hal::delay(*m_clock, 250ms);  // 250ms seams safe refresh time
   // }
-  m_steer_motor->velocity_control(0);  // stops
+  set_steer_motor_velocity(0);  // stops
   hal::print<128>(*console, "Final level: %d\n", m_limit_switch->level());
 
-  m_steer_motor->feedback_request(
-    hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
-  float stop_angle = m_steer_motor->feedback().angle();
+  float stop_angle = get_steer_motor_position();
 
   // hal::print<128>(*console, "Stopped angle: %f\n", stop_angle);
   m_steer_offset = stop_angle - settings.limit_switch_position;
@@ -228,6 +219,30 @@ void swerve_module::hard_home()
 float swerve_module::get_steer_offset()
 {
   return m_steer_offset;
+}
+
+hal::degrees swerve_module::get_steer_motor_position()
+{
+  m_steer_motor->feedback_request(
+    hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
+  return m_steer_motor->feedback().angle();
+}
+void swerve_module::set_steer_motor_position(hal::degrees p_position)
+{
+  m_steer_motor->position_control(p_position, 30);
+}
+void swerve_module::set_steer_motor_velocity(float p_velocity)
+{
+  m_steer_motor->velocity_control(p_velocity);
+}
+
+float swerve_module::get_prop_motor_velocity()
+{
+  return m_propulsion_motor->feedback().speed();
+}
+void swerve_module::set_prop_motor_velocity(float p_velocity)
+{
+  m_propulsion_motor->velocity_control(p_velocity);
 }
 
 }  // namespace sjsu::drive

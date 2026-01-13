@@ -4,6 +4,8 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
 #include <resource_list.hpp>
+#include <swerve_module.hpp>
+
 
 namespace sjsu::drive {
 void application()
@@ -16,7 +18,7 @@ void application()
     auto swerve_modules = resources::swerve_modules();
     hal::print(*console, "modules defined\n");
     hal::print(*console, "starting homing!\n");
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < module_count; i++) {
       try {
         swerve_modules->at(i)->hard_home();
         hal::print<64>(*console, "Homed wheel: %d\n", i);

@@ -16,7 +16,7 @@ void application()
 {
   auto console = resources::console();
   auto clock = resources::clock();
-  constexpr hal::time_duration cycle_time = 1000ms;
+  constexpr hal::time_duration cycle_time = 250ms;
   constexpr sec cycle_time_sec = hal_time_duration_to_sec(cycle_time);
   drivetrain dt(resources::swerve_modules(), cycle_time_sec);
   mission_control_manager mcm(resources::can_transceiver());

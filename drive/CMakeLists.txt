@@ -13,15 +13,18 @@ DEMOS
     chassis_vel_demo
     drive_cycle_demo
     simple_can_reply_demo
-    
+    poll_connecitons
+    serial_command_demo
 INCLUDES
     include
     .
+    ../drivers/include
 SOURCES
     src/drivetrain_math.cpp
     src/drivetrain.cpp
     src/mission_control_manager.cpp
     src/swerve_module.cpp
+    ../drivers/src/serial_commands.cpp
 
 PACKAGES
 #    libhal-__device__

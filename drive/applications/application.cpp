@@ -1,4 +1,3 @@
-#include <swerve_module.hpp>
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
 #include <libhal-exceptions/control.hpp>
@@ -9,6 +8,7 @@
 #include <mission_control_manager.hpp>
 #include <optional>
 #include <resource_list.hpp>
+#include <swerve_module.hpp>
 
 namespace sjsu::drive {
 
@@ -24,7 +24,16 @@ void application()
   dt.hard_home();
   while (true) {
     hal::u64 frame_end = hal::future_deadline(*clock, cycle_time);
-    dt.periodic();
+
+    try {
+      dt.periodic();
+    } catch (hal::exception e) {
+      console->flush();
+      hal::print(*console, "\nexpection thown\n");
+      console->flush();
+      throw e;
+    }
+
     hal::print(*console, "\ncommand handle\n");
     bool home_req = mcm.read_homing_request();
     std::optional<chassis_velocities_request> cvr =
@@ -37,9 +46,10 @@ void application()
                      cvr->chassis_vels.rotational_vel,
                      cvr->module_conflicts);
       if (home_req) {
-        cvr->chassis_vels = {{0,0},0};
+        cvr->chassis_vels = { { 0, 0 }, 0 };
       }
-      bool resolved = dt.set_target_state(cvr->chassis_vels, cvr->module_conflicts);
+      bool resolved =
+        dt.set_target_state(cvr->chassis_vels, cvr->module_conflicts);
       cvr->module_conflicts = resolved;
       mcm.reply_set_velocity_request(cvr.value());
     } else if (home_req) {
@@ -49,7 +59,9 @@ void application()
     }
     hal::print(*console, "\ndata req\n");
     mcm.fulfill_data_requests(dt);
+    console->flush();
     hal::print(*console, "\nheartbeat\n");
+    console->flush();
     mcm.reply_heartbeat();
 
     while (clock->uptime() < frame_end)

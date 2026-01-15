@@ -221,42 +221,59 @@ float swerve_module::get_steer_offset()
   return m_steer_offset;
 }
 
-constexpr int can_attempts = 3;
+constexpr int can_attempts = 2;
 hal::degrees swerve_module::get_steer_motor_position()
 {
   int attempts = can_attempts;
+  auto console = resources::console();
   while (true) {
     try {
+      hal::print(*console, "tg_steer");
       m_steer_motor->feedback_request(
         hal::actuator::rmd_mc_x_v2::read::multi_turns_angle);
       return m_steer_motor->feedback().angle();
-    } catch (hal::exception e){
+    } catch (hal::exception e) {
       attempts--;
-      if (attempts <= 0) throw e;
+      if (attempts <= 0) {
+        hal::print(*console,"final attempt failed throwing");
+        throw e;
+      }
     }
   }
 }
 void swerve_module::set_steer_motor_position(hal::degrees p_position)
 {
+  auto console = resources::console();
   int attempts = can_attempts;
   while (true) {
+    hal::print(*console, "ts_steer");
     try {
       m_steer_motor->position_control(p_position, 30);
+      return;
     } catch (hal::exception e) {
       attempts--;
-      if (attempts <= 0) throw e;
+      if (attempts <= 0) {
+        hal::print(*console,"final attempt failed throwing");
+        throw e;
+      }
     }
   }
 }
 void swerve_module::set_steer_motor_velocity(float p_velocity)
 {
+  auto console = resources::console();
   int attempts = can_attempts;
   while (true) {
+    hal::print(*console, "tg_steer_vel");
     try {
       m_steer_motor->velocity_control(p_velocity);
+      return;
     } catch (hal::exception e) {
       attempts--;
-      if (attempts <= 0) throw e;
+      if (attempts <= 0) {
+        hal::print(*console,"final attempt failed throwing");
+        throw e;
+      }
     }
   }
 }
@@ -264,24 +281,35 @@ void swerve_module::set_steer_motor_velocity(float p_velocity)
 float swerve_module::get_prop_motor_velocity()
 {
   int attempts = can_attempts;
+  auto console = resources::console();
   while (true) {
+    hal::print(*console, "tg_prop");
     try {
       return m_propulsion_motor->feedback().speed();
     } catch (hal::exception e) {
       attempts--;
-      if (attempts <= 0) throw e;
+      if (attempts <= 0) {
+        hal::print(*console,"final attempt failed throwing");
+        throw e;
+      }
     }
   }
 }
 void swerve_module::set_prop_motor_velocity(float p_velocity)
 {
+  auto console = resources::console();
   int attempts = can_attempts;
   while (true) {
+    hal::print(*console, "ts_prop");
     try {
       m_propulsion_motor->velocity_control(p_velocity);
+      return;
     } catch (hal::exception e) {
       attempts--;
-      if (attempts <= 0) throw e;
+      if (attempts <= 0) {
+        hal::print(*console,"final attempt failed throwing");
+        throw e;
+      }
     }
   }
 }

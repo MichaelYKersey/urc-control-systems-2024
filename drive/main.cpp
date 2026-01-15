@@ -27,6 +27,8 @@ int main()
       print<64>(*console_ref,
                 "App Failed, error code: %d\n",
                 e.error_code());
+      console_ref->flush();
+      throw e;
   }
   std::terminate();
 }

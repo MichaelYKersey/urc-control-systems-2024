@@ -89,7 +89,7 @@ chassis_velocities drivetrain::get_state_estimate() const
 void drivetrain::periodic()
 {
   [[maybe_unused]]auto console = resources::console();
-  hal::print(*console, "Periodic:\n");
+  // hal::print(*console, "Periodic:\n");
   // TODO: deal with out of tolerance modules.
 
   // refresh telemetry and state
@@ -124,7 +124,7 @@ void drivetrain::periodic()
   }
   // else interpolate directly (but check not already at target state)
   else {
-    hal::print(*console, "regular:");
+    // hal::print(*console, "regular:");
     // return early if target states already final to not clutter the CAN bus
     bool target_matching = true;
     for (int i = 0; i < module_count; i++) {
@@ -137,7 +137,7 @@ void drivetrain::periodic()
       }
     }
     if (target_matching) {
-      hal::print(*console, "skip CAN messages already at final state\n");
+      // hal::print(*console, "skip CAN messages already at final state\n");
       return;
     } else {
       hal::print(*console, "interpolating\n");

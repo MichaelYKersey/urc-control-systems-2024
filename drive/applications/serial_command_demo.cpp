@@ -27,8 +27,8 @@ void application()
           throw hal::argument_out_of_domain(nullptr);
         }
         float x = drivers::serial_commands::parse_float(params[0]);
-        float y = drivers::serial_commands::parse_float(params[0]);
-        float w = drivers::serial_commands::parse_float(params[0]);
+        float y = drivers::serial_commands::parse_float(params[1]);
+        float w = drivers::serial_commands::parse_float(params[2]);
         hal::print<32>(*console, "Set vel: %f,%f,%f\n", x, y, w);
         dt.set_target_state({ { x, y }, w }, true);
       },
@@ -97,7 +97,15 @@ void application()
           break;
       }
     }
-    dt.periodic();
+    // dt.periodic();
+    try {
+      dt.periodic();
+    } catch (hal::exception e) {
+      console->flush();
+      hal::print(*console, "\nexpection thown in periodic\n");
+      console->flush();
+      throw e;
+    }
   }
 }
 }  // namespace sjsu::drive

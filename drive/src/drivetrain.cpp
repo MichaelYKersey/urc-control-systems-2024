@@ -1,11 +1,13 @@
-#include <resource_list.hpp>
-#include <vector2d.hpp>
 #include <array>
 #include <drivetrain.hpp>
 #include <drivetrain_math.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal/error.hpp>
+#include <libhal/units.hpp>
+#include <resource_list.hpp>
 #include <swerve_module.hpp>
+#include <vector2d.hpp>
+
 
 namespace sjsu::drive {
 
@@ -26,7 +28,7 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
   // find final target state
   std::array<vector2d, module_count> vectors =
     chassis_velocities_to_module_vectors(m_target_state, *m_modules);
-  [[maybe_unused]]auto console = resources::console();
+  [[maybe_unused]] auto console = resources::console();
   for (vector2d v : vectors) {
     hal::print<128>(*console, "vec:%f,%f\n", v.x, v.y);
   }
@@ -52,8 +54,8 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
     m_stopping = true;
     if (m_resolve_module_conflicts) {
       for (int i = 0; i < module_count; i++) {
-          m_final_target_module_states[i] =
-            calculate_freest_state(*(m_modules->at(i)), vectors[i]);
+        m_final_target_module_states[i] =
+          calculate_freest_state(*(m_modules->at(i)), vectors[i]);
       }
     } else {
       for (int i = 0; i < module_count; i++) {
@@ -67,7 +69,7 @@ bool drivetrain::set_target_state(chassis_velocities p_target_state,
       }
     }
   }
-  if (m_target_state == chassis_velocities({0,0},0)) {
+  if (m_target_state == chassis_velocities({ 0, 0 }, 0)) {
     m_stopping = true;
   }
   for (swerve_module_state s : m_final_target_module_states) {
@@ -88,7 +90,7 @@ chassis_velocities drivetrain::get_state_estimate() const
 
 void drivetrain::periodic()
 {
-  [[maybe_unused]]auto console = resources::console();
+  [[maybe_unused]] auto console = resources::console();
   // hal::print(*console, "Periodic:\n");
   // TODO: deal with out of tolerance modules.
 
@@ -204,7 +206,7 @@ void drivetrain::hard_home()
   }
 }
 
-float drivetrain::get_steer_offset(unsigned int p_module_index) const
+hal::degrees drivetrain::get_steer_offset(unsigned int p_module_index) const
 {
   if (p_module_index >= m_modules->size()) {
     throw hal::argument_out_of_domain(this);

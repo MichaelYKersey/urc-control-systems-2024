@@ -25,7 +25,6 @@ int main()
   } catch (hal::exception e) {
     auto console_ref = sjsu::drive::resources::console();
     print<64>(*console_ref, "App Failed, error code: %d\n", e.error_code());
-    console_ref->flush();
     throw;
   }
   std::terminate();

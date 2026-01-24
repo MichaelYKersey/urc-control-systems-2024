@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <libhal/pointers.hpp>
+#include <libhal/units.hpp>
 #include <swerve_module.hpp>
 
 namespace sjsu::drive {
@@ -61,8 +62,13 @@ public:
    * interupted)
    */
   void hard_home();
-
-  float get_steer_offset (unsigned int p_module_index) const;
+  /**
+   * @brief gets a module's steer encoder offset
+   * @param p_module_index index of swerve module
+   * @return returns encoder reading in degrees when facing forward
+   * @throws hal::argument_out_of_domain if index in invalid
+   */
+  hal::degrees get_steer_offset(unsigned int p_module_index) const;
 
 private:
   hal::v5::strong_ptr<

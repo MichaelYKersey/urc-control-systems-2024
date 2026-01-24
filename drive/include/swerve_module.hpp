@@ -109,6 +109,10 @@ public:
    * interupted)
    */
   void hard_home();
+  /**
+   * @brief gets steer encoder offset
+   * @return returns encoder reading in degrees when facing forward
+   */
   float get_steer_offset();
   
 private:

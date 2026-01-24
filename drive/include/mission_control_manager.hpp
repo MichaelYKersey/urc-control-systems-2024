@@ -67,32 +67,32 @@ public:
   void reply_set_velocity_request(
     chassis_velocities_request const& p_chassis_vel);
 
-  // return true if homing requested;
+    /**
+    * @brief if homing was requested
+    * @returns return true if homing requested
+   */
   bool read_homing_request();
+  /**
+   * @brief sends a reply to last homing requests
+   */
   void reply_homing_request();
-
+  /**
+   * @brief replys to all data requests from mission control
+   * @param p_drivetrain drivetrain reference used to read data
+   */
   void fulfill_data_requests(drivetrain const& p_drivetrain);
-
+  
+  /**
+   * @brief clear's heartbeat request queue
+   */
   void clear_heartbeat_requests();
+  /**
+   * @brief responds to heartbeat request
+   */
   void reply_heartbeat();
 
-  // Config
-  // Config reply
-
-  /*
-  MC info needed each cycle
-  - connected (heat beat or other message)
-  - target vels (optional)
-  - homing requested (and not overridden by more recent request)
-  - module offsets requested (byte acts as bool array?)
-  - if estimate requested
-  - config requests (???)
-
-  info needed to reply
-  - if interpolate is needed
-  - offsets (just a function call)
-  - vel estimate
-  */
+  // TODO: Config & Config reply
+  
 private:
   hal::v5::strong_ptr<hal::can_transceiver> m_can_transceiver;
   hal::can_message_finder m_heartbeat_message_finder;

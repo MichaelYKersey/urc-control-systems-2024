@@ -100,9 +100,7 @@ void application()
     try {
       dt.periodic();
     } catch (hal::exception e) {
-      console->flush();
       hal::print(*console, "\nexpection thown in periodic\n");
-      console->flush();
       throw;
     }
   }

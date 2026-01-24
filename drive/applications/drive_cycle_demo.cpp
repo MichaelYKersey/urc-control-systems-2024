@@ -38,9 +38,6 @@ void application()
 
   hal::time_duration loop_duration = 0ns;
   for (unsigned int i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
-    // hal::print<64>(*console,"test %d (index:%d)\n",321,123);
-    // hal::print<64>(*console,"loop_dur += %d
-    // (index:%d)\n",static_cast<int>(states[i].duration/1s),i);
     loop_duration += states[i].duration;
   }
   hal::print<64>(

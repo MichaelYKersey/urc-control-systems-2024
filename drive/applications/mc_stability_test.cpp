@@ -19,36 +19,31 @@ void application()
   auto drive_can_finder = hal::can_message_finder(*can_transceiver,0xC);
   bool send = false;
   int count = 0;
-  try {
-    while (true) {
-      if (homing_can_finder.find()) {
-        hal::print(*console, "\nHoming command arrived\n");
-        send = !send;
-        can_transceiver->send({.id=0x111,.length=0});
-      }
-      auto dv = drive_can_finder.find();
-      if (dv) {
-        hal::print(*console, "\nDrive arrived\n");
-        dv->id=0xD;
-        can_transceiver->send(dv.value());
-      }
-      if (send) {
-        motor->velocity_control(0);
-        hal::delay(*clock, 10ms);
-        if (count %10 == 0) {
-          hal::print(*console, "s");
-        }
-      } else {
-        if (count == 0) {  
-          hal::print(*console, "r");
-        }
-      }
-      count++;
-      count %= 10000;
+  while (true) {
+    if (homing_can_finder.find()) {
+      hal::print(*console, "\nHoming command arrived\n");
+      send = !send;
+      can_transceiver->send({.id=0x111,.length=0});
     }
-  } catch (hal::exception e) {
-    print<64>(*console, "error code: %d\n", e.error_code());
-    throw;
+    auto dv = drive_can_finder.find();
+    if (dv) {
+      hal::print(*console, "\nDrive arrived\n");
+      dv->id=0xD;
+      can_transceiver->send(dv.value());
+    }
+    if (send) {
+      motor->velocity_control(0);
+      hal::delay(*clock, 10ms);
+      if (count %10 == 0) {
+        hal::print(*console, "s");
+      }
+    } else {
+      if (count == 0) {  
+        hal::print(*console, "r");
+      }
+    }
+    count++;
+    count %= 10000;
   }
 }
 }  // namespace sjsu::drive

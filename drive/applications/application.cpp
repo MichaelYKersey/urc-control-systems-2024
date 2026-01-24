@@ -21,16 +21,14 @@ void application()
   drivetrain dt(resources::swerve_modules(), cycle_time_sec);
   mission_control_manager mcm(resources::can_transceiver());
 
-  dt.hard_home();
+  dt.hard_home();//TODO: move homing into main loop 
   while (true) {
     hal::u64 frame_end = hal::future_deadline(*clock, cycle_time);
 
     try {
       dt.periodic();
     } catch (hal::exception e) {
-      console->flush();
       hal::print(*console, "\nexception thrown in periodic\n");
-      console->flush();
       throw;
     }
 
@@ -59,9 +57,7 @@ void application()
     }
     hal::print(*console, "\ndata req\n");
     mcm.fulfill_data_requests(dt);
-    console->flush();
     hal::print(*console, "\nheartbeat\n");
-    console->flush();
     mcm.reply_heartbeat();
 
     while (clock->uptime() < frame_end)

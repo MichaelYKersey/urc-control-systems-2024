@@ -20,9 +20,9 @@ void application()
   auto console = resources::console();
   auto can_transceiver = resources::can_transceiver();
   mission_control_manager mcm(can_transceiver);
-  hal::print(*console, "appstart\n");
-  // [[maybe_unused]] auto
   [[maybe_unused]]auto finder =  hal::can_message_finder(*can_transceiver,0x00);
+  
+  hal::print(*console, "appstart\n");
   while (true) {
     // hal::print(*console, "scanning\n");
     hal::u64 frame_end = hal::future_deadline(*clock, cycle_time);

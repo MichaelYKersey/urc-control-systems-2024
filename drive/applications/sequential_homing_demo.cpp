@@ -6,7 +6,6 @@
 #include <resource_list.hpp>
 #include <swerve_module.hpp>
 
-
 namespace sjsu::drive {
 void application()
 {
@@ -26,7 +25,7 @@ void application()
       } catch (hal::exception e) {
         hal::print<64>(
           *console, "Wheel %d throwing error %d\n", i, e.error_code());
-        throw e;
+        throw;
       }
     }
   } catch (hal::exception e) {

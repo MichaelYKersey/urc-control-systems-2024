@@ -29,9 +29,9 @@ void application()
       dt.periodic();
     } catch (hal::exception e) {
       console->flush();
-      hal::print(*console, "\nexpection thown\n");
+      hal::print(*console, "\nexception thrown in periodic\n");
       console->flush();
-      throw e;
+      throw;
     }
 
     hal::print(*console, "\ncommand handle\n");

@@ -112,7 +112,7 @@ hal::v5::strong_ptr<hal::output_pin> status_led()
 }
 
 hal::v5::optional_ptr<hal::stm32f1::can_peripheral_manager_v2> can_manager;
-std::array<hal::v5::optional_ptr<hal::can_mask_filter>,2> can_mask;
+std::array<hal::v5::optional_ptr<hal::can_mask_filter>, 2> can_mask;
 void initialize_can()
 {
   if (not can_manager) {
@@ -127,7 +127,7 @@ void initialize_can()
         std::chrono::milliseconds(1),
         hal::stm32f1::can_pins::pb9_pb8);
     can_manager->baud_rate(1.0_MHz);
-    auto f = hal::acquire_can_mask_filter(driver_allocator(),can_manager);
+    auto f = hal::acquire_can_mask_filter(driver_allocator(), can_manager);
     hal::can_mask_filter::pair p;
     p.id = 0;
     p.mask = 0;
@@ -260,7 +260,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_left_steer()
       print<64>(*console_ref,
                 "Front left steer failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return front_left_steer_ptr;
@@ -278,7 +278,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_left_prop()
       print<64>(*console_ref,
                 "Front left prop failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return front_left_prop_ptr;
@@ -289,6 +289,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_right_steer()
 {
   if (not front_right_steer_ptr) {
     try {
+      // front_right_steer_ptr = make_rmd(0x150);
       front_right_steer_ptr = make_rmd(front_right_steer_can_id);
       front_right_steer_ptr->velocity_control(0);
     } catch (hal::exception e) {
@@ -296,7 +297,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_right_steer()
       print<64>(*console_ref,
                 "Front right steer failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return front_right_steer_ptr;
@@ -314,7 +315,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_right_prop()
       print<64>(*console_ref,
                 "Front right prop failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return front_right_prop_ptr;
@@ -332,7 +333,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_left_steer()
       print<64>(*console_ref,
                 "back left steer failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return back_left_steer_ptr;
@@ -350,7 +351,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_left_prop()
       print<64>(*console_ref,
                 "back left prop failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return back_left_prop_ptr;
@@ -368,7 +369,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_right_steer()
       print<64>(*console_ref,
                 "back right steer failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return back_right_steer_ptr;
@@ -386,7 +387,7 @@ hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_right_prop()
       print<64>(*console_ref,
                 "back right prop failed, error code: %d\n",
                 e.error_code());
-      throw e;
+      throw;
     }
   }
   return back_right_prop_ptr;

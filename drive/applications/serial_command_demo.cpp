@@ -6,7 +6,6 @@
 #include <resource_list.hpp>
 #include <serial_commands.hpp>
 
-
 namespace sjsu::drive {
 void application()
 {
@@ -104,7 +103,7 @@ void application()
       console->flush();
       hal::print(*console, "\nexpection thown in periodic\n");
       console->flush();
-      throw e;
+      throw;
     }
   }
 }

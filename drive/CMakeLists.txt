@@ -15,6 +15,7 @@ DEMOS
     simple_can_reply_demo
     poll_connecitons
     serial_command_demo
+    mc_stability_test
 INCLUDES
     include
     .

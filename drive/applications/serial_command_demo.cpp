@@ -14,9 +14,12 @@ void application()
   auto led = resources::status_led();
   auto clock = resources::clock();
   auto console = resources::console();
+  hal::print(*console, "\nappstart\n");
   constexpr hal::time_duration cycle_time = 250ms;
   constexpr sec cycle_time_sec = hal_time_duration_to_sec(cycle_time);
-  drivetrain dt(resources::swerve_modules(), cycle_time_sec);
+  auto mods_ptr = resources::swerve_modules();
+  drivetrain dt(mods_ptr, cycle_time_sec);
+  //TODO: some UB in the serial library maybe resulting in issues with the initialization of drivetrain
 
   std::array cmd_defs = {
     drivers::serial_commands::def{
@@ -79,14 +82,14 @@ void application()
         }
       },
     }
-  };  // namespace sjsu::drive
+  };
 
   drivers::serial_commands::handler cmd{ console };
 
   while (true) {
+    cmd.handle(cmd_defs);
     try {
-      cmd.handle(cmd_defs);
-    } catch (hal::exception e) {
+    } catch (hal::exception const& e) {
       switch (e.error_code()) {
         case std::errc::argument_out_of_domain:
           hal::print(*console, "Error: invalid argument length or type\n");
@@ -96,7 +99,7 @@ void application()
           break;
       }
     }
-    // dt.periodic();
+    dt.periodic();
     try {
       dt.periodic();
     } catch (hal::exception e) {

@@ -11,11 +11,12 @@ DEMOS
     simple_state_set_demo
     prop_motor_test
     chassis_vel_demo
-    drive_cycle_demo
+    iterate_state
     simple_can_reply_demo
     poll_connecitons
     serial_command_demo
     mc_stability_test
+    limit_switch_test
 INCLUDES
     include
     .

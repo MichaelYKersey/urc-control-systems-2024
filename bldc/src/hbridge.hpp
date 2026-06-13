@@ -47,22 +47,22 @@ struct triple_hbridge
   {
     hal::u16 const max = 0xffff;
     if (a >= 0.f) {
-      ah.duty_cycle(max * a);
       al.duty_cycle(0);
+      ah.duty_cycle(max * a);
     } else {
       ah.duty_cycle(0);
       al.duty_cycle(fabsf(max * a));
     }
     if (b >= 0.f) {
-      bh.duty_cycle(max * b);
       bl.duty_cycle(0);
+      bh.duty_cycle(max * b);
     } else {
       bh.duty_cycle(0);
       bl.duty_cycle(fabsf(max * b));
     }
     if (c >= 0.f) {
-      ch.duty_cycle(max * c);
       cl.duty_cycle(0);
+      ch.duty_cycle(max * c);
     } else {
       ch.duty_cycle(0);
       cl.duty_cycle(fabsf(max * c));

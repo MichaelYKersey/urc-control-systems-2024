@@ -42,7 +42,7 @@ find_package(libhal-util REQUIRED CONFIG)
 
 pico_sdk_init()
 
-add_executable(bellerphon src/main.cpp src/can.c)
+add_executable(bellerphon src/main.cpp)
 
 target_link_libraries(
     bellerphon

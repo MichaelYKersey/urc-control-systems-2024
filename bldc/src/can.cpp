@@ -1,3 +1,5 @@
+#ifndef _CAN_CPP
+#define _CAN_CPP
 // Software CANbus implementation for rp2040/rp2350
 //
 // Copyright (C) 2022-2026  Kevin O'Connor <kevin@koconnor.net>
@@ -6,13 +8,15 @@
 
 #include <stdint.h> // uint32_t
 #include <string.h> // memset
-#include "can.h" // can2040_setup
+#include <hardware/irq.h>
+#include "can.hpp" // can2040_setup
 #include "hardware/regs/dreq.h" // DREQ_PIO0_RX1
 #include "hardware/structs/dma.h" // dma_hw
 #include "hardware/structs/iobank0.h" // iobank0_hw
 #include "hardware/structs/padsbank0.h" // padsbank0_hw
 #include "hardware/structs/pio.h" // pio0_hw
 #include "hardware/structs/resets.h" // RESETS_RESET_PIO0_BITS
+#include "shared_resources.hpp"
 
 
 /****************************************************************
@@ -1484,3 +1488,56 @@ can2040_get_statistics(struct can2040 *cd, struct can2040_stats *stats)
         // Raced with irq handler update - retry copy
     }
 }
+
+void can2040_cb(struct can2040*,
+                       uint32_t notify,
+                       struct can2040_msg* msg)
+{
+  if (notify != CAN2040_NOTIFY_RX) {
+    return;
+  }
+
+  if (msg->id != 0x15) {
+    return;
+  }
+  if (msg->dlc < 1) {
+    return;
+  }
+  switch (msg->data[0]) {
+    case 0:
+      dir = 0;
+      break;
+    case 1:
+      dir = 1;
+      break;
+    case 2:
+      dir = -1;
+      break;
+    default:
+      dir = 0;
+  }
+}
+
+can2040 canbus = {};
+void pio0_irq()
+{
+  can2040_pio_irq_handler(&canbus);
+}
+
+void canbus_setup()
+{
+  uint32_t pio_num = 0;
+  can2040_setup(&canbus, pio_num);
+  can2040_callback_config(&canbus, &can2040_cb);
+
+  // Enable irqs
+  irq_set_exclusive_handler(PIO0_IRQ_0, &pio0_irq);
+  irq_set_priority(PIO0_IRQ_0, 1);
+  irq_set_enabled(PIO0_IRQ_0, true);
+
+  uint32_t bitrate = 1'000'000;
+  int rx = 25, tx = 24;
+  can2040_start(&canbus, SYS_CLK_HZ, bitrate, rx, tx);
+}
+
+#endif

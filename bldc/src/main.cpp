@@ -19,11 +19,15 @@ int main()
   auto out = rp::stdio_serial();
   auto clk = rp::clock();
   multicore_launch_core1(&core2);
+  hal::print(out, "Program Start=================\n");
 
   canbus_setup();
-
+  shared_power_portion = 0.7;
+  // float step = 0.1;
   for (;;) {
-    hal::print<64>(out, "Hello world! Direction: %d\n", dir);
+    hal::print<64>(out, "Power: %f\n", shared_power_portion);
+    hal::print<64>(out, "Zero Angle: %f\n", shared_zero_angle);
     hal::delay(clk, 1s);
+    // shared_power_portion *=;
   }
 }

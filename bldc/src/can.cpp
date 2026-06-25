@@ -1489,35 +1489,6 @@ can2040_get_statistics(struct can2040 *cd, struct can2040_stats *stats)
     }
 }
 
-void can2040_cb(struct can2040*,
-                       uint32_t notify,
-                       struct can2040_msg* msg)
-{
-  if (notify != CAN2040_NOTIFY_RX) {
-    return;
-  }
-
-  if (msg->id != 0x15) {
-    return;
-  }
-  if (msg->dlc < 1) {
-    return;
-  }
-  switch (msg->data[0]) {
-    case 0:
-      dir = 0;
-      break;
-    case 1:
-      dir = 1;
-      break;
-    case 2:
-      dir = -1;
-      break;
-    default:
-      dir = 0;
-  }
-}
-
 can2040 canbus = {};
 void pio0_irq()
 {
@@ -1538,6 +1509,36 @@ void canbus_setup()
   uint32_t bitrate = 1'000'000;
   int rx = 25, tx = 24;
   can2040_start(&canbus, SYS_CLK_HZ, bitrate, rx, tx);
+}
+
+// CONFIG CAN HERE
+void can2040_cb(struct can2040*,
+                       uint32_t notify,
+                       struct can2040_msg* msg)
+{
+  if (notify != CAN2040_NOTIFY_RX) {
+    return;
+  }
+
+  if (msg->id != 0x15) {
+    return;
+  }
+  if (msg->dlc < 1) {
+    return;
+  }
+  switch (msg->data[0]) {
+    case 0:
+      shared_power_portion = 0;
+      break;
+    case 1:
+      shared_power_portion = 1;
+      break;
+    case 2:
+      shared_power_portion = -1;
+      break;
+    default:
+      shared_power_portion = 0;
+  }
 }
 
 #endif

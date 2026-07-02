@@ -1262,7 +1262,7 @@ data_state_update_eof1(struct can2040 *cd, uint32_t data)
 
 // Handle data received while in MS_DISCARD state
 static void
-data_state_update_discard(struct can2040 *cd, uint32_t data)
+data_state_update_discard(struct can2040 *cd, uint32_t data [[maybe_unused]])
 {
     data_state_go_discard(cd);
 }

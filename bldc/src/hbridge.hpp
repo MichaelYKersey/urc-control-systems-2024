@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _H_BRIDGE_HPP
+#define _H_BRIDGE_HPP
 
 #include <libhal-picosdk/dwt_counter.hpp>
 #include <libhal-picosdk/i2c.hpp>
@@ -77,3 +78,4 @@ private:
   hal::rp::v5::pwm_slice<8> s8;
   hal::rp::v5::pwm_pin ah, al, bh, bl, ch, cl;
 };
+#endif

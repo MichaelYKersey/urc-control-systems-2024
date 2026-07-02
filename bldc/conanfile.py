@@ -47,6 +47,7 @@ class demos(ConanFile):
         cmake.generate()
 
     def requirements(self):
+        self.requires("libhal/[4.23.0]")
         self.requires("libhal-util/[^5.4.0]")
         self.requires("libhal-picosdk/0.0.1")
         # bootstrap = self.python_requires["libhal-bootstrap"]

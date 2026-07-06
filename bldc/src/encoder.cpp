@@ -37,17 +37,17 @@ uint16_t get_magnitude(hal::i2c& i2c)
 
 void absolute_encoder_accumulator::update_reading()
 {
-  uint16_t last_raw_encoder_reading = m_encoder_ticks_raw;
+  int16_t last_raw_encoder_reading = m_encoder_ticks_raw;
   m_encoder_ticks_raw = read_raw_angle();
   m_last_read_timestamp = m_clock->uptime();
-  uint16_t angle_dif = m_encoder_ticks_raw - last_raw_encoder_reading;
+  int16_t angle_dif = m_encoder_ticks_raw - last_raw_encoder_reading;
   if (angle_dif > ticks_per_rotation / 2) {
-    angle_dif -= ticks_per_rotation / 2;
+    angle_dif -= ticks_per_rotation;
   } else if (angle_dif < -ticks_per_rotation / 2) {
-    angle_dif += ticks_per_rotation / 2;
+    angle_dif += ticks_per_rotation;
   }
   m_cumulative_encoder_tick += angle_dif;
-  shared_angular_vel = angle_dif * (360.0f / ticks_per_rotation);
+  // shared_angular_vel = angle_dif * (360.0f / ticks_per_rotation);
 }
 
 int16_t absolute_encoder_accumulator::get_encoder_ticks_raw()

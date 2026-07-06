@@ -19,7 +19,7 @@ void core2()
   auto i2c = resources::i2c();
   auto clock = resources::clock();
   absolute_encoder_accumulator aea(i2c, clock);
-  float prev_vel_sample = 0;
+  long long prev_vel_sample = 0;
 
   // we align the motor by running a phase for 500ms before reading the zero
   // angle
@@ -38,10 +38,10 @@ void core2()
       power = shared_power_portion;
       power = std::max(std::min(power, 0.7f), -0.7f);
       i = 1'000;
-      long long sample = aea.get_cumulative_encoder_ticks() *
-                         absolute_encoder_accumulator::ticks_to_rad;
+      long long sample = aea.get_cumulative_encoder_ticks();
+                        //  absolute_encoder_accumulator::ticks_to_rad;
       shared_angle = sample;
-      // shared_angular_vel = sample - prev_vel_sample;
+      shared_angular_vel = sample - prev_vel_sample;
       prev_vel_sample = sample;
     }
     i--;

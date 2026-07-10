@@ -13,13 +13,14 @@ enum class can_commands : hal::byte
   set_velocity = 0x01,
   get_velocity = 0x02,
 };
+
 can_commands requested_control_mode = can_commands::power;
 bool command_change = false;
 float requested_command_value = 0;
 
 static int send_can_reply(hal::byte id, int32_t data)
 {
-  can2040_msg msg{ .id = 0x016,
+  can2040_msg msg{ .id = can_id+0x100,
                    .dlc = 5,
                    .data = { id,
                              static_cast<hal::byte>(data >> 24),
@@ -35,7 +36,7 @@ void can2040_cb(struct can2040*, uint32_t notify, struct can2040_msg* msg)
   if (notify != CAN2040_NOTIFY_RX) {
     return;
   }
-  if (msg->id != 0x15) {
+  if (msg->id != can_id) {
     return;
   }
   if (msg->dlc != 8) {
@@ -55,6 +56,7 @@ void can2040_cb(struct can2040*, uint32_t notify, struct can2040_msg* msg)
       requested_control_mode = static_cast<can_commands>(command);
       break;
     case static_cast<hal::byte>(can_commands::get_velocity):
+      // TODO: Check that messages aren't missed while tring to send the reply
       send_can_reply(
         static_cast<hal::byte>(can_commands::get_velocity),
         static_cast<int32_t>(shared_angular_vel / max_vel * 0x0f'ff'ff'ff));

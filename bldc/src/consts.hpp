@@ -12,5 +12,6 @@ constexpr pidff_consts vel_pidff_consts{
   .max_out = 0.7,
   .min_out = -0.7,
 };
+const uint16_t can_id = 0x15;
 
 #endif

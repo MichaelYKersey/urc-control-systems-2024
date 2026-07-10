@@ -58,7 +58,7 @@ long long absolute_encoder_accumulator::get_cumulative_encoder_ticks()
 {
   return m_cumulative_encoder_tick;
 }
-long long absolute_encoder_accumulator::get_last_read_timestamp()
+hal::u64 absolute_encoder_accumulator::get_last_read_timestamp()
 {
   return m_last_read_timestamp;
 }

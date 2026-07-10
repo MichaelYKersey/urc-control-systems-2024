@@ -22,7 +22,7 @@ public:
   void update_reading();
   int16_t get_encoder_ticks_raw();
   long long get_cumulative_encoder_ticks();
-  long long get_last_read_timestamp();
+  hal::u64 get_last_read_timestamp();
   int16_t read_raw_angle();
 
 private:
@@ -32,6 +32,6 @@ private:
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
   int16_t m_encoder_ticks_raw = 0;
   long long m_cumulative_encoder_tick = 0;
-  long long m_last_read_timestamp = 0;
+  hal::u64 m_last_read_timestamp = 0;
 };
 #endif

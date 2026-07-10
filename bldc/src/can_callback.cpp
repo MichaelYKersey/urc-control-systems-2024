@@ -1,6 +1,9 @@
 #ifndef _CAN_CALLBACK_CPP
 #define _CAN_CALLBACK_CPP
 #include "can.cpp"
+#include "can.hpp"
+#include "consts.hpp"
+#include "shared_resources.hpp"
 #include <cstdint>
 #include <libhal/units.hpp>
 
@@ -8,10 +11,23 @@ enum class can_commands : hal::byte
 {
   power = 0x00,
   set_velocity = 0x01,
+  get_velocity = 0x02,
 };
 can_commands requested_control_mode = can_commands::power;
 bool command_change = false;
 float requested_command_value = 0;
+
+static int send_can_reply(hal::byte id, int32_t data)
+{
+  can2040_msg msg{ .id = 0x016,
+                   .dlc = 5,
+                   .data = { id,
+                             static_cast<hal::byte>(data >> 24),
+                             static_cast<hal::byte>(data >> 16),
+                             static_cast<hal::byte>(data >> 8),
+                             static_cast<hal::byte>(data) } };
+  return can2040_transmit(&canbus, &msg);
+}
 
 // CONFIG CAN HERE
 void can2040_cb(struct can2040*, uint32_t notify, struct can2040_msg* msg)
@@ -37,6 +53,11 @@ void can2040_cb(struct can2040*, uint32_t notify, struct can2040_msg* msg)
         (requested_command_value != value_float) ||
         (static_cast<hal::byte>(requested_control_mode) != command);
       requested_control_mode = static_cast<can_commands>(command);
+      break;
+    case static_cast<hal::byte>(can_commands::get_velocity):
+      send_can_reply(
+        static_cast<hal::byte>(can_commands::get_velocity),
+        static_cast<int32_t>(shared_angular_vel / max_vel * 0x0f'ff'ff'ff));
       break;
     default:
       break;

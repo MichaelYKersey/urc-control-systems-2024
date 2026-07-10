@@ -12,6 +12,7 @@
 #include "pidff.cpp"
 #include "pidff.hpp"
 #include "shared_resources.hpp"
+#include "consts.hpp"
 
 int main()
 {
@@ -20,18 +21,8 @@ int main()
   auto clk = resources::clock();
   multicore_launch_core1(&core2);
   hal::print(*out, "Program Start=================\n");
-  pidff_consts vel_pidff_consts{
-    .kP = 0,
-    .kI = 0,
-    .kD = 0,
-    .kS = 0,
-    .kV = 0,
-    .max_out = 0.7,
-    .min_out = -0.7,
-  };
   velocity_pidff pid(vel_pidff_consts, clk);
   can_commands current_control_mode = can_commands::power;
-  constexpr float max_vel = 0;
 
   canbus_setup();
   // float step = 0.1;

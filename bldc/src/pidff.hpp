@@ -17,6 +17,7 @@ public:
   velocity_pidff(pidff_consts p_consts, hal::strong_ptr<hal::steady_clock> p_clock);
 
   float set_target(float p_target_vel);
+  float get_target();
   float get_last_output();
   float update(float p_vel_reading);
   float update(float p_vel_reading, hal::u64 p_clock_count);

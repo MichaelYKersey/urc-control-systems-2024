@@ -28,6 +28,10 @@ float velocity_pidff::set_target(float p_target_vel)
   return m_control_variable;
 }
 
+float velocity_pidff::get_target()
+{
+  return m_target_vel;
+}
 float velocity_pidff::get_last_output()
 {
   return m_control_variable;

@@ -16,7 +16,6 @@
 #include "hardware/structs/padsbank0.h" // padsbank0_hw
 #include "hardware/structs/pio.h" // pio0_hw
 #include "hardware/structs/resets.h" // RESETS_RESET_PIO0_BITS
-#include "shared_resources.hpp"
 
 
 /****************************************************************
@@ -1510,24 +1509,4 @@ void canbus_setup()
   int rx = 25, tx = 24;
   can2040_start(&canbus, SYS_CLK_HZ, bitrate, rx, tx);
 }
-
-// CONFIG CAN HERE
-void can2040_cb(struct can2040*,
-                       uint32_t notify,
-                       struct can2040_msg* msg)
-{
-  if (notify != CAN2040_NOTIFY_RX) {
-    return;
-  }
-
-  if (msg->id != 0x15) {
-    return;
-  }
-  if (msg->dlc != 8) {
-    return;
-  }
-  uint16_t unsign_power = (msg->data[0] << 8) | msg->data[1];
-  shared_power_portion = static_cast<float>(unsign_power) / 0xffff;
-}
-
 #endif

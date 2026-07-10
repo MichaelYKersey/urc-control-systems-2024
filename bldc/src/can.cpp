@@ -1523,22 +1523,11 @@ void can2040_cb(struct can2040*,
   if (msg->id != 0x15) {
     return;
   }
-  if (msg->dlc < 1) {
+  if (msg->dlc != 8) {
     return;
   }
-  switch (msg->data[0]) {
-    case 0:
-      shared_power_portion = 0;
-      break;
-    case 1:
-      shared_power_portion = 1;
-      break;
-    case 2:
-      shared_power_portion = -1;
-      break;
-    default:
-      shared_power_portion = 0;
-  }
+  uint16_t unsign_power = (msg->data[0] << 8) | msg->data[1];
+  shared_power_portion = static_cast<float>(unsign_power) / 0xffff;
 }
 
 #endif

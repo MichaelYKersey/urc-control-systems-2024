@@ -26,6 +26,7 @@ SOURCES
     src/drivetrain_math.cpp
     src/mission_control_manager.cpp
     src/swerve_module.cpp
+    src/prop_motor.cpp
 
 PACKAGES
 #    libhal-__device__

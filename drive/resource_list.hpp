@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libhal-actuator/smart_servo/rmd/mc_x_v2.hpp>
 #include <libhal-arm-mcu/system_control.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/adc.hpp>

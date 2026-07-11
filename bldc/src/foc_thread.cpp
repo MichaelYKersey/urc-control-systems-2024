@@ -71,6 +71,8 @@ void core2()
     float angle_diff = (current_reading.reading - prev_vel_sample) * absolute_encoder_accumulator::ticks_to_rad;
     float dt = (current_reading.timestamp - oldest_reading.timestamp) / clock->frequency();
     shared_angular_vel = angle_diff / dt;
+    // Uncomment if you want to read the diff in ticks between cycles
+    // shared_angular_vel = current_reading.reading - reading_buffer[(reading_buffer_index+reading_buffer.size()-1) % reading_buffer.size()].reading;
     reading_buffer[reading_buffer_index] = current_reading;
     reading_buffer_index = (reading_buffer_index + 1) % reading_buffer.size();
   }

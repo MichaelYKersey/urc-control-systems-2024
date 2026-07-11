@@ -52,7 +52,9 @@ int main()
       default:
         break;
     }
+    // power = 0.7f;
     shared_power_portion = power;
+
     // prints
     if (i == 0) {
       i = 5000;
@@ -63,7 +65,7 @@ int main()
       hal::print<64>(*out, "velocity: %f\t", vel);
       hal::print<64>(*out, "Power: %f\t", power);
       hal::print(*out, "\n");
-      i--;
     }
+    i--;
   }
 }

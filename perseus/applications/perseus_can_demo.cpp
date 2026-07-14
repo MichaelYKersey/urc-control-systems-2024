@@ -77,4 +77,38 @@ void can_application(hal::v5::strong_ptr<bldc_perseus> servo_ptr,
   }
 }
 
+void can_app_bootstrap(hal::u16 allowed_id,
+                       bldc_perseus::PID_settings pid_settings,
+                       bldc_perseus::servo_values servo_values)
+{
+  auto clock = resources::clock();
+  auto console = resources::console();
+  // bldc
+  auto h_bridge = resources::h_bridge();
+  auto encoder = resources::encoder();
+  bldc_perseus servo(h_bridge, encoder);
+  hal::print(*console, "BLDC Servo created...\n");
+  auto servo_ptr = hal::v5::make_strong_ptr<decltype(servo)>(
+    resources::driver_allocator(), std::move(servo));
+  servo_ptr->update_pid_position(pid_settings);
+  servo_ptr->set_servo_values(servo_values);
+  // can
+  auto can_transceiver = resources::can_transceiver();
+  auto can_bus_manager = resources::can_bus_manager();
+  auto can_interrupt = resources::can_interrupt();
+  auto can_id_filter = resources::can_identifier_filter();
+  static constexpr auto baudrate = 1_MHz;
+  can_perseus servo_can(allowed_id,
+                        baudrate,
+                        can_transceiver,
+                        can_bus_manager,
+                        can_interrupt,
+                        can_id_filter);
+  auto can_ptr = hal::v5::make_strong_ptr<decltype(servo_can)>(
+    resources::driver_allocator(), std::move(servo_can));
+
+  // Starting
+  hal::print<64>(*console, "Starting Motor %X\n",allowed_id);
+  can_application(servo_ptr, can_ptr);
+}
 }  // namespace sjsu::perseus

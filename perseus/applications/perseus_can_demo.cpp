@@ -9,10 +9,11 @@
 
 #include <bldc_servo.hpp>
 #include <can_messaging.hpp>
+#include <libhal/units.hpp>
 #include <resource_list.hpp>
 
-
 using namespace std::chrono_literals;
+using namespace hal::literals;
 namespace sjsu::perseus {
 
 void print_can_message(hal::serial& p_console,
@@ -33,7 +34,8 @@ void print_can_message(hal::serial& p_console,
   hal::print(p_console, "]\n}\n");
 }
 
-void can_application(hal::v5::strong_ptr<bldc_perseus> servo_ptr, hal::v5::strong_ptr<can_perseus> can_ptr)
+void can_application(hal::v5::strong_ptr<bldc_perseus> servo_ptr,
+                     hal::v5::strong_ptr<can_perseus> can_ptr)
 {
   using namespace hal::literals;
   using namespace std::chrono_literals;
@@ -41,38 +43,38 @@ void can_application(hal::v5::strong_ptr<bldc_perseus> servo_ptr, hal::v5::stron
   // gen
   auto clock = resources::clock();
   auto console = resources::console();
-  
-  bool new_action = false; 
-  int delay_counter = 0; 
+
+  bool new_action = false;
+  int delay_counter = 0;
 
   while (true) {
 
-    // receive message 
-    std::optional<hal::can_message> msg = can_ptr->check_for_mc_message(); 
-  
-    // react to message 
+    // receive message
+    std::optional<hal::can_message> msg = can_ptr->check_for_mc_message();
+
+    // react to message
     if (msg) {
       print_can_message(*console, *msg);
-      can_ptr->process_can_message(*msg, servo_ptr); 
-      hal::print<64>(*console, "Action: %x \n", servo_ptr->get_reading_action());
-      new_action = true; 
+      can_ptr->process_can_message(*msg, servo_ptr);
+      hal::print<64>(
+        *console, "Action: %x \n", servo_ptr->get_reading_action());
+      new_action = true;
     }
 
-    // continue action 
-    if(servo_ptr->get_reading_action() != 0) {
+    // continue action
+    if (servo_ptr->get_reading_action() != 0) {
       if (delay_counter >= 6) {
         delay_counter = 0;
-        // can_ptr->repeating_action_can(servo_ptr->get_reading_action(), servo_ptr); 
+        // can_ptr->repeating_action_can(servo_ptr->get_reading_action(),
+        // servo_ptr);
       }
-      servo_ptr->periodic_action(new_action); 
+      servo_ptr->periodic_action(new_action);
     }
-    
-    new_action = false; 
-    delay_counter++; 
-    hal::delay(*clock, 50ms); 
 
-
+    new_action = false;
+    delay_counter++;
+    hal::delay(*clock, 50ms);
   }
-  
 }
+
 }  // namespace sjsu::perseus

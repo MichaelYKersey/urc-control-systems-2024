@@ -26,6 +26,7 @@ libhal_build_demos(
     can_test_track
     can_test_wrist_l
     can_test_wrist_r
+    drive_steer_FL
 
   
   INCLUDES

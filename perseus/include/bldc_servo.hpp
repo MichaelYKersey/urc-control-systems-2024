@@ -49,9 +49,9 @@ public:
   */
   struct PID_prev_values 
   {
-    float integral; 
-    float last_error; 
-    float prev_timestamp; 
+    float integral = 0.0f; 
+    float last_error = 0.0f; 
+    float prev_timestamp = 0.0f; 
   }; 
   /**
     * @brief Struct for the values that are individual to each servo.
@@ -59,13 +59,13 @@ public:
   struct servo_values 
   {
     // for reading value 
-    float gear_ratio; 
+    float gear_ratio = 1.0f; 
     // for feedforward 
-    float angle_offset; 
-    float fight_gravity; 
+    float angle_offset = 0.0f; 
+    float fight_gravity = 0.0f; 
     // for safety
-    float high_clamped_value; 
-    float low_clamped_value; 
+    float high_clamped_value = 1.0f; 
+    float low_clamped_value = -1.0f; 
   };
   /**
     * @brief Set the target position of the servo.
@@ -239,8 +239,7 @@ public:
   }
 
   void set_prev_joint_position(float prev_joint_pos); 
-  float get_prev_joint_position(); 
-  void set_actual_position(); 
+  float get_prev_joint_position();
   float get_actual_position(); 
   void set_servo_values(servo_values p_servo_values); 
 
@@ -264,7 +263,6 @@ private:
   servo_values m_servo_values; 
   // float m_clamped_power;
   float m_prev_encoder_value;
-  float m_actual_position; 
   float m_prev_joint_position; 
   float home_encoder_value;
   uint32_t m_reading_action; 

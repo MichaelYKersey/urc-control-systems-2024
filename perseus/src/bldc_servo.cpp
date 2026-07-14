@@ -1,5 +1,4 @@
 #include <libhal-arm-mcu/stm32_generic/quadrature_encoder.hpp>
-#include <libhal/units.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/steady_clock.hpp>
@@ -7,6 +6,7 @@
 #include <sys/types.h>
 
 #include <bldc_servo.hpp>
+#include <can_messaging.hpp>
 #include <resource_list.hpp>
 
 using namespace std::chrono_literals;
@@ -14,72 +14,37 @@ using namespace std::chrono_literals;
 namespace sjsu::perseus {
 
 // ...existing code...
-bldc_perseus::bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-                           hal::v5::strong_ptr<hal::rotation_sensor> p_encoder)
+bldc_perseus::bldc_perseus(
+  hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
+  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder)
   : m_h_bridge(p_hbridge)
   , m_encoder(p_encoder)
   , m_clock(resources::clock())
 {
-  m_last_clock_check = m_clock->uptime(); 
+  m_last_clock_check = m_clock->uptime();
 
-  m_reading = {
-    .position = 0,
-    .power = 0, 
-    .velocity = 0,  
-  };
-  m_target = { 
-    .position = 0, 
-    .power = 0.0f , 
-    .velocity = 0
-  };
-  m_clamped_power = 0.3;
+  m_target = { .position = 0, .power = 0.0f, .velocity = 0 };
   m_prev_encoder_value = bldc_perseus::read_angle();
-  m_PID_prev_velocity_values = {
-    .integral = 0, 
-    .last_error = 0, 
-    .prev_dt_time = 0.0 
+  m_PID_prev_velocity_values = { .integral = 0,
+                                 .last_error = 0,
+                                 .prev_timestamp = 0.0 };
+  m_PID_prev_position_values = { .integral = 0,
+                                 .last_error = 0,
+                                 .prev_timestamp = 0.0 };
+  // default
+  m_servo_values = { .gear_ratio = 0.01,
+                     .angle_offset = 0.01,
+                     .fight_gravity = 0.01,
+                     .high_clamped_value = 0.01,
+                     .low_clamped_value = -0.01 };
+  m_reading = {
+    .position = m_servo_values.angle_offset,
+    .power = 0,
+    .velocity = 0,
   };
-  m_PID_prev_position_values = { 
-    .integral = 0,              
-    .last_error = 0,
-    .prev_dt_time = 0.0 
-  };
-  // elbow 
-  m_servo_values = {
-    .gear_ratio = 5281.1, // 5281.1 * 2 / 2
-    .feedforward_clamp = 0.2, 
-    .length = 0.4826, 
-    .angle_offset = -20, 
-    .weight_beam = 1000, 
-    .weight_end = 600 
-  }; 
-  // // shoulder 
-  // m_servo_values = {
-  //   .gear_ratio = 73935.4, // 5281.1 * 28 / 2
-  //   .feedforward_clamp = 0, 
-  //   .length = 0.5715, 
-  //   .angle_offset = -20, 
-  //   .weight_beam = 1600, 
-  //   .weight_end = 1600 
-  // }; 
-  // // wrist 
-  // m_servo_values = {
-  //   .gear_ratio = 2640.55, // 5281.1 * 1 / 2
-  //   .feedforward_clamp = 0.2,
-  //   .length = 0.762, 
-  //   .angle_offset = 0, 
-  //   .weight_beam = 500, 
-  //   .weight_end = 100 
-  // }; 
-  // // track 
-  // m_servo_values = {
-  //   .gear_ratio = 16915.5, // 751.8 * 1 / 2 * 360 / 8 (for mm) 
-  //   .feedforward_clamp = 0,
-  //   .length = 0, 
-  //   .angle_offset = 0, 
-  //   .weight_beam = 0, 
-  //   .weight_end = 0 
-  // }; 
+  // CHANGE SERVO
+  m_prev_joint_position = 0;
+  m_reading_action = 0x000;
 }
 
 void bldc_perseus::set_target_position(float target_position)
@@ -96,6 +61,13 @@ float bldc_perseus::get_reading_position()
 {
   m_reading.position = bldc_perseus::read_angle();
   return m_reading.position;
+}
+
+void bldc_perseus::set_reading_position(float position)
+{
+  m_reading.position = position;
+  auto console = resources::console();
+  hal::print(*console, "\nHH\n");
 }
 
 void bldc_perseus::set_target_velocity(float target_velocity)
@@ -131,13 +103,44 @@ float bldc_perseus::get_reading_velocity()
 
 }
 
-float bldc_perseus::get_power() {
+float bldc_perseus::get_power()
+{
   return m_reading.power;
 }
 
-void bldc_perseus::set_power(float power) {
-  m_reading.power = power; 
+void bldc_perseus::set_power(float power)
+{
+  m_reading.power = power;
   m_h_bridge->power(m_reading.power);
+}
+
+void bldc_perseus::set_reading_action(uint32_t action)
+{
+  m_reading_action = action;
+}
+
+uint32_t bldc_perseus::get_reading_action()
+{
+  return m_reading_action;
+}
+
+void bldc_perseus::freeze()
+{
+  bldc_perseus::PID_settings pos_saved = { .kp = m_reading_position_settings.kp,
+                                           .ki = m_reading_position_settings.ki,
+                                           .kd =
+                                             m_reading_position_settings.kd };
+  bldc_perseus::PID_settings vel_saved = { .kp = m_reading_velocity_settings.kp,
+                                           .ki = m_reading_velocity_settings.ki,
+                                           .kd =
+                                             m_reading_velocity_settings.kd };
+  bldc_perseus::PID_settings hard_stop = { .kp = 0, .ki = 0, .kd = 0 };
+  update_pid_position(hard_stop);
+  // SET FOR ELBOW RIGHT NOW
+  // FIX FOR OTHERS
+  update_position(1);
+  update_pid_position(pos_saved);
+  update_pid_position(vel_saved);
 }
 
 void bldc_perseus::stop()
@@ -145,7 +148,6 @@ void bldc_perseus::stop()
   m_reading.power = 0.0f;
   m_h_bridge->power(0.0f);
 }
-
 
 bldc_perseus::PID_settings bldc_perseus::get_pid_settings()
 {
@@ -166,34 +168,52 @@ void bldc_perseus::home_encoder()
   m_reading.position = 0;
 }
 
-hal::degrees bldc_perseus::read_angle() {
-  return m_encoder->read().angle / m_servo_values.gear_ratio; 
+hal::degrees bldc_perseus::read_angle()
+{
+  return (m_encoder->read().angle / m_servo_values.gear_ratio);
 }
 
-void bldc_perseus::update_velocity(bool from_scratch) 
+void bldc_perseus::update_velocity(bool from_scratch)
 {
   // TODO : implement velocity PID control
-  if (from_scratch) m_PID_prev_velocity_values.integral = 0; 
+  if (from_scratch)
+    m_PID_prev_velocity_values.integral = 0;
 }
 
 void bldc_perseus::reset_time()
 {
   m_PID_prev_velocity_values = { .integral = 0,
                                  .last_error = 0,
-                                 .prev_dt_time = 0.0 };
+                                 .prev_timestamp = 0.0 };
   m_PID_prev_position_values = { .integral = 0,
                                  .last_error = 0,
-                                 .prev_dt_time = 0.0 };
+                                 .prev_timestamp = 0.0 };
   m_last_clock_check = m_clock->uptime();
 }
 
-void bldc_perseus::set_pid_clamped_power(float power)
+void bldc_perseus::set_pos_clamped_power(float power)
 {
-  m_clamped_power = power; 
+  m_servo_values.high_clamped_value = power;
 }
-float bldc_perseus::get_pid_clamped_power() {
-  return m_clamped_power; 
+float bldc_perseus::get_pos_clamped_power()
+{
+  return m_servo_values.high_clamped_value;
 }
+void bldc_perseus::set_neg_clamped_power(float power)
+{
+  m_servo_values.low_clamped_value = power;
+}
+float bldc_perseus::get_neg_clamped_power()
+{
+  return m_servo_values.low_clamped_value;
+}
+// void bldc_perseus::set_pid_clamped_power(float power)
+// {
+//   m_clamped_power = power;
+// }
+// float bldc_perseus::get_pid_clamped_power() {
+//   return m_clamped_power;
+// }
 
 hal::time_duration bldc_perseus::get_clock_time(hal::steady_clock& p_clock)
 {
@@ -201,46 +221,104 @@ hal::time_duration bldc_perseus::get_clock_time(hal::steady_clock& p_clock)
     sec_to_hal_time_duration(1.0 / p_clock.frequency());
   return period * p_clock.uptime();
 }
-// position 
-void bldc_perseus::update_position(bool from_scratch) 
+// position
+void bldc_perseus::update_position(bool from_scratch)
 {
+  auto console = resources::console();
   // pid portion
   m_reading.position = bldc_perseus::read_angle();
-  float error = m_target.position - m_reading.position;
+  float error = m_target.position - get_actual_position();
   sec curr_time = hal_time_duration_to_sec(get_clock_time(*m_clock));
-  sec dt = curr_time - m_PID_prev_position_values.prev_dt_time;
-  if (from_scratch) { 
-    m_PID_prev_position_values.integral = 0.0f; 
+  sec dt = curr_time - m_PID_prev_position_values.prev_timestamp;
+  if (from_scratch) {
+    m_PID_prev_position_values.integral = 0.0f;
   }
-  m_PID_prev_position_values.integral += error * dt; 
-  float derivative = (error - m_PID_prev_position_values.last_error) / dt; 
-  float pTerm = m_reading_position_settings.kp * error; 
-  float iTerm  = m_reading_position_settings.ki * m_PID_prev_position_values.integral; 
-  float dTerm = m_reading_position_settings.kd * derivative; 
-  m_PID_prev_position_values.last_error = error; 
-  m_PID_prev_position_values.prev_dt_time = curr_time;
+  m_PID_prev_position_values.integral += error * dt;
+  float derivative = (error - m_PID_prev_position_values.last_error) / dt;
+  float pTerm = m_reading_position_settings.kp * error;
+  float iTerm =
+    m_reading_position_settings.ki * m_PID_prev_position_values.integral;
+  float dTerm = m_reading_position_settings.kd * derivative;
+  m_PID_prev_position_values.last_error = error;
+  m_PID_prev_position_values.prev_timestamp = curr_time;
   float pid_sum = pTerm + iTerm + dTerm;
-  // feed forward 
-  float feedforward = bldc_perseus::position_feedforward(); 
-  // apply 
-  float projected_power = pid_sum + feedforward; 
-  // use actual position here once can be communicated/calculated via can 
-  if (m_reading.position < 0) 
-  { 
-    projected_power = std::clamp(projected_power, -1 * m_clamped_power, -0.1f * m_clamped_power); 
-  }
-  else { 
-    projected_power = std::clamp(projected_power, -1 * m_clamped_power, m_clamped_power);
-  }
-  m_reading.power = projected_power; 
+  // feed forward
+  float feedforward = bldc_perseus::position_feedforward();
+  // apply
+  float projected_power = pid_sum + feedforward;
+  // CHANGE SERVO
+  // // use actual position here once can be communicated/calculated via can
+  // if (get_actual_position() < 0)
+  // {
+  //   projected_power = std::clamp(projected_power, -1 * m_clamped_power,
+  //   m_clamped_power);
+  // }
+  // else {
+  //   projected_power = std::clamp(projected_power, -1 * m_clamped_power,
+  //   m_clamped_power);
+  // }
+  projected_power = std::clamp(projected_power,
+                               m_servo_values.low_clamped_value,
+                               m_servo_values.high_clamped_value);
+  // if (get_actual_position() > 0) {
+  //   float t = m_servo_values.low_clamped_value;
+  //   m_servo_values.low_clamped_value = m_servo_values.high_clamped_value *
+  //   -1; m_servo_values.high_clamped_value = t * -1;
+  // }
+  hal::print<128>(
+    *console,
+    "Target: %f, Position: %f, Error: %f, pid: %f, projected: %f\n",
+    m_target.position,
+    get_actual_position(),
+    error,
+    pid_sum,
+    projected_power);
+  m_reading.power = projected_power;
   m_h_bridge->power(m_reading.power);
 }
 
-// use actual position here once can be communicated/calculated via can 
-float bldc_perseus::position_feedforward() 
+// use actual position here once can be communicated/calculated via can
+float bldc_perseus::position_feedforward()
 {
-  return std::sin(std::numbers::pi/180 * (m_reading.position + m_servo_values.angle_offset)) 
-    * m_servo_values.feedforward_clamp; 
+  return std::sin(std::numbers::pi / 180 * get_actual_position()) *
+         m_servo_values.fight_gravity;
 }
 
-}// namespace sjsu::perseus
+void bldc_perseus::set_prev_joint_position(float prev_joint_pos)
+{
+  m_prev_joint_position = prev_joint_pos;
+}
+
+float bldc_perseus::get_prev_joint_position()
+{
+  return m_prev_joint_position;
+}
+
+float bldc_perseus::get_actual_position()
+{
+  return m_reading.position + m_servo_values.angle_offset +
+         m_prev_joint_position;
+}
+
+void bldc_perseus::set_servo_values(servo_values p_servo_values)
+{
+  m_servo_values = p_servo_values;
+}
+
+void bldc_perseus::periodic_action(bool new_action)
+{
+  switch (static_cast<can_perseus::action>(m_reading_action)) {
+    case can_perseus::action::homing: {
+      bldc_perseus::home_encoder();
+      break;
+    }
+    case can_perseus::action::set_position_target: {
+      bldc_perseus::update_position(new_action);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+}  // namespace sjsu::perseus

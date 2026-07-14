@@ -86,7 +86,7 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
     velocity *= -1;
   }
   hal::print(*console, "commanding prop,");
-  set_prop_motor_velocity(velocity);
+  set_prop_motor_velocity(velocity * settings.mps_to_rpm);
   hal::print(*console, "commanding steer,\n");
 }
 

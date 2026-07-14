@@ -27,6 +27,8 @@ SOURCES
     src/mission_control_manager.cpp
     src/swerve_module.cpp
     src/prop_motor.cpp
+    src/velocity_motor_mock.cpp
+    src/velocity_servo_mock.cpp
 
 PACKAGES
 #    libhal-__device__

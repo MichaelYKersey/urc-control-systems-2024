@@ -89,7 +89,7 @@ void application()
     resources::driver_allocator(), std::move(servo));
   // CHANGE SERVO
   // servo_ptr->set_pid_clamped_power(0.3);
-  servo_ptr->set_pid_clamped_power(0.5);
+  // servo_ptr->set_pid_clamped_power(0.5);
 
   hal::print(*console, "CAN IT\n");
 
@@ -139,14 +139,14 @@ void application()
       if (delay_counter >= 6) {
         delay_counter = 0;
         if (p_o_r) {
-          pitch_can_ptr->repeating_action_can(servo_ptr->get_reading_action(),
+          pitch_can_ptr->periodic_action(servo_ptr->get_reading_action(),
                                               servo_ptr);
         } else {
-          roll_can_ptr->repeating_action_can(servo_ptr->get_reading_action(),
+          roll_can_ptr->periodic_action(servo_ptr->get_reading_action(),
                                              servo_ptr);
         }
       }
-      servo_ptr->repeating_action_bldc(new_action);
+      servo_ptr->periodic_action(new_action);
 
       new_action = false;
       delay_counter++;

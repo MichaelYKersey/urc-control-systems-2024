@@ -187,7 +187,7 @@ void application()
         // can_ptr->repeating_action_can(servo_ptr->get_reading_action(),
         // servo_ptr);
       }
-      servo_ptr->repeating_action_bldc(new_action);
+      servo_ptr->periodic_action(new_action);
     }
 
     new_action = false;

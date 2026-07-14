@@ -28,7 +28,7 @@ hal::degrees velocity_servo_mock::update_sim()
   if (max_dist_traveled > std::abs(m_target_position - m_sim_position)) {
     m_sim_position = m_target_position;
   } else {
-    if (m_target_position - m_sim_position < 0) {
+    if (m_target_position < m_sim_position) {
       m_sim_position += max_dist_traveled;
     } else {
       m_sim_position -= max_dist_traveled;

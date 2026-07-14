@@ -11,14 +11,15 @@ class prop_motor : hal::velocity_motor
 public:
   prop_motor(hal::strong_ptr<hal::v5::can_transceiver> p_can, uint16_t p_id);
 
-  virtual void driver_enable(bool p_state);
-  virtual void driver_drive(hal::rpm p_velocity);
-  virtual status_t driver_status();
-  virtual range_t driver_velocity_range();
 private:
   hal::strong_ptr<hal::v5::can_transceiver> m_can;
   hal::can_message_finder m_can_message_finder;
   uint16_t m_id;
+
+  virtual void driver_enable(bool p_state);
+  virtual void driver_drive(hal::rpm p_velocity);
+  virtual status_t driver_status();
+  virtual range_t driver_velocity_range();
 };
 
 class prop_servo : hal::velocity_servo

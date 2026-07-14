@@ -1,17 +1,22 @@
-//template from drivers/include/h_bridge.hpp
+// template from drivers/include/h_bridge.hpp
 
 #pragma once
 #include <array>
-#include <libhal/pointers.hpp>
+#include <libhal-util/can.hpp>
+#include <libhal/can.hpp>
 #include <libhal/motor.hpp>
 #include <libhal/output_pin.hpp>
+#include <libhal/pointers.hpp>
 #include <libhal/pwm.hpp>
+#include <libhal/steady_clock.hpp>
 #include <libhal/units.hpp>
-
 
 namespace sjsu::drivers {
 
-struct pid_settings // A structure to hold PID (Proportional, Integral, Derivative)
+using namespace std::chrono_literals;
+
+struct pid_settings  // A structure to hold PID (Proportional, Integral,
+                     // Derivative)
 {
   float kp = 0.0f;
   float ki = 0.0f;
@@ -21,9 +26,12 @@ struct pid_settings // A structure to hold PID (Proportional, Integral, Derivati
 class perseus_bldc
 {
 public:
+  perseus_bldc(hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver,
+               hal::v5::strong_ptr<hal::steady_clock> p_clock,
+                 hal::u32 p_can_id, hal::time_duration p_max_response_time = 500us);
   // currently inorder of messages on CAN ID doc
   /**
-   * @brief kills power, sets voltage to 0 
+   * @brief kills power, sets voltage to 0
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
   void kill_power();
@@ -50,8 +58,10 @@ public:
    */
   void set_target_position(hal::degrees p_target_position);
   /**
-   * @brief check if target position has been hit since target position was given
-   * @returns if target position has been hit since target position was given (also true if no target position is active)
+   * @brief check if target position has been hit since target position was
+   * given
+   * @returns if target position has been hit since target position was given
+   * (also true if no target position is active)
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
   bool hit_target_position();
@@ -69,23 +79,25 @@ public:
   void set_target_velocity(hal::rpm p_target_velocity);
   /**
    * @brief set voltage as portion of max
-   * @param p_portion motor voltage as portion of max voltage, must be a value from 0 to 1 (inclusive)
-   * @throws hal::argument_out_of_domain - p_portion was not from 0 to 1 (inclusive)
+   * @param p_portion motor voltage as portion of max voltage, must be a value
+   * from -1 to 1 (inclusive)
+   * @throws hal::argument_out_of_domain - p_portion was not from -1 to 1
+   * (inclusive)
    * @throws hal::timed_out - perseus motor controller doesn't respond
-   */ 
+   */
   void set_power(float p_portion);
   /**
    * @brief set the constants for positional PID
    * @param p_settings new positional PID constants
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
-  void set_position_pid_config(const pid_settings& p_settings);
+  void set_position_pid_config(pid_settings const& p_settings);
   /**
    * @brief set the constants for velocity PID
    * @param p_settings new velocity PID constants
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
-  void set_velocity_pid_config(const pid_settings& p_settings);
+  void set_velocity_pid_config(pid_settings const& p_settings);
   /**
    * @brief get target position
    * @returns target position of positional PID
@@ -115,16 +127,21 @@ public:
    * @param p_settings positional PID constants
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
-  void get_position_pid_config(const pid_settings& p_settings);
+  void get_position_pid_config(pid_settings const& p_settings);
   /**
    * @brief get the constants for velocity PID
    * @param p_settings velocity PID constants
    * @throws hal::timed_out - perseus motor controller doesn't respond
    */
-  void get_velocity_pid_config(const pid_settings& p_settings);
+  void get_velocity_pid_config(pid_settings const& p_settings);
 
 private:
-  hal::u32 m_address;
+  hal::v5::strong_ptr<hal::can_transceiver> m_can_transceiver;
+  hal::v5::strong_ptr<hal::steady_clock> m_clock;
+  hal::u32 m_can_id;
+  hal::can_message_finder m_reply_message_finder;
+  hal::time_duration m_max_response_time;
 
+  std::optional<hal::can_message> send(std::array<hal::byte, 8> const& p_payload, hal::byte const& length);
 };
 }  // namespace sjsu::drivers

@@ -19,6 +19,7 @@ project(demos LANGUAGES CXX)
 libhal_build_demos(
 
 DEMOS
+  can_demo
   color_sensor_demo
   led_strip_demo
   h_bridge_demo
@@ -33,6 +34,7 @@ DEMOS
 INCLUDES
   include
   .
+  ../perseus/include
 
 SOURCES
     src/serial_commands.cpp

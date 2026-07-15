@@ -121,7 +121,7 @@ void application()
       print_can_message(*console, *msg_r);
       roll_can_ptr->process_can_message(*msg_r, servo_ptr);
       hal::print<64>(
-        *console, "Roll action: %x \n", servo_ptr->get_reading_action());
+        *console, "Roll action: %x \n", servo_ptr->get_active_action());
       new_action = true;
       p_o_r = 1;
     }
@@ -129,21 +129,21 @@ void application()
       print_can_message(*console, *msg_p);
       pitch_can_ptr->process_can_message(*msg_p, servo_ptr);
       hal::print<64>(
-        *console, "Pitch action: %x \n", servo_ptr->get_reading_action());
+        *console, "Pitch action: %x \n", servo_ptr->get_active_action());
       new_action = true;
       p_o_r = 0;
     }
 
     // continue action
-    if (servo_ptr->get_reading_action() != 0) {
+    if (servo_ptr->get_active_action() != 0) {
       if (delay_counter >= 6) {
         delay_counter = 0;
         if (p_o_r) {
-          pitch_can_ptr->periodic_action(servo_ptr->get_reading_action(),
-                                              servo_ptr);
+          pitch_can_ptr->periodic_action(servo_ptr->get_active_action(),
+                                         servo_ptr);
         } else {
-          roll_can_ptr->periodic_action(servo_ptr->get_reading_action(),
-                                             servo_ptr);
+          roll_can_ptr->periodic_action(servo_ptr->get_active_action(),
+                                        servo_ptr);
         }
       }
       servo_ptr->periodic_action(new_action);

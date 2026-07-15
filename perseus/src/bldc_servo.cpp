@@ -44,7 +44,7 @@ bldc_perseus::bldc_perseus(
   };
   // CHANGE SERVO
   m_prev_joint_position = 0;
-  m_reading_action = 0x000;
+  m_active_action = 0x000;
 }
 
 void bldc_perseus::set_target_position(float target_position)
@@ -82,25 +82,25 @@ float bldc_perseus::get_target_velocity()
 float bldc_perseus::get_reading_velocity()
 {
 
-  const hal::u64 now_time = m_clock->uptime();
-  const hal::u64 dt_time = now_time - m_last_clock_check;
+  hal::u64 const now_time = m_clock->uptime();
+  hal::u64 const dt_time = now_time - m_last_clock_check;
 
-  const float  dt_sec = static_cast<float>(dt_time) / static_cast<float>(m_clock->frequency());
+  float const dt_sec =
+    static_cast<float>(dt_time) / static_cast<float>(m_clock->frequency());
 
-  if (dt_sec <= 0.0f){
+  if (dt_sec <= 0.0f) {
     return m_reading.velocity;
   }
-  
-  const hal::degrees current_position = bldc_perseus::read_angle();
-  const float d_theta = (current_position - m_prev_encoder_value);
-  
+
+  hal::degrees const current_position = bldc_perseus::read_angle();
+  float const d_theta = (current_position - m_prev_encoder_value);
+
   m_reading.velocity = d_theta / dt_sec;
 
   m_prev_encoder_value = current_position;
   m_last_clock_check = now_time;
-  
-  return m_reading.velocity;
 
+  return m_reading.velocity;
 }
 
 float bldc_perseus::get_power()
@@ -114,14 +114,14 @@ void bldc_perseus::set_power(float power)
   m_h_bridge->power(m_reading.power);
 }
 
-void bldc_perseus::set_reading_action(uint32_t action)
+void bldc_perseus::set_active_action(uint32_t action)
 {
-  m_reading_action = action;
+  m_active_action = action;
 }
 
-uint32_t bldc_perseus::get_reading_action()
+uint32_t bldc_perseus::get_active_action()
 {
-  return m_reading_action;
+  return m_active_action;
 }
 
 void bldc_perseus::freeze()
@@ -307,7 +307,7 @@ void bldc_perseus::set_servo_values(servo_values p_servo_values)
 
 void bldc_perseus::periodic_action(bool new_action)
 {
-  switch (static_cast<can_perseus::action>(m_reading_action)) {
+  switch (static_cast<can_perseus::action>(m_active_action)) {
     case can_perseus::action::homing: {
       bldc_perseus::home_encoder();
       break;

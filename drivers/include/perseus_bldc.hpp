@@ -28,7 +28,8 @@ class perseus_bldc
 public:
   perseus_bldc(hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver,
                hal::v5::strong_ptr<hal::steady_clock> p_clock,
-                 hal::u32 p_can_id, hal::time_duration p_max_response_time = 500us);
+               hal::u32 p_can_id,
+               hal::time_duration p_max_response_time = 500us);
   // currently inorder of messages on CAN ID doc
   /**
    * @brief kills power, sets voltage to 0
@@ -142,6 +143,8 @@ private:
   hal::can_message_finder m_reply_message_finder;
   hal::time_duration m_max_response_time;
 
-  std::optional<hal::can_message> send(std::array<hal::byte, 8> const& p_payload, hal::byte const& length);
+  std::optional<hal::can_message> send(
+    std::array<hal::byte, 8> const& p_payload,
+    hal::byte const& length);
 };
 }  // namespace sjsu::drivers

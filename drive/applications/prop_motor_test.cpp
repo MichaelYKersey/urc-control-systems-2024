@@ -1,3 +1,5 @@
+#include "propulsion_controller.hpp"
+#include "steer_controller.hpp"
 #include <drivetrain_math.hpp>
 #include <libhal-exceptions/control.hpp>
 #include <libhal-util/serial.hpp>
@@ -17,7 +19,7 @@ void application()
   auto console = resources::console();
   hal::print(*console, "app starting\n");
   // TODO: resource file must return hal::velocity_servo instead of rmd_mc_x_v2
-  hal::v5::strong_ptr<hal::velocity_servo> steer_motor_array[] = {
+  hal::v5::strong_ptr<steer_controller> steer_motor_array[] = {
     resources::front_left_steer(),
     resources::front_right_steer(),
     resources::back_left_steer(),
@@ -27,14 +29,12 @@ void application()
 
   // configure steer speed then lock to current position
   for (uint8_t i = 0; i < steer_motors.size(); i++) {
-    steer_motors[i]->configure({ .velocity = 120 });
-    float angle = steer_motors[i]->position();
-    steer_motors[i]->position(angle);
+    steer_motors[0]->stop();
   }
   hal::print(*console, "steer locked\n");
 
   // TODO: resource file must return hal::velocity_motor instead of rmd_mc_x_v2
-  hal::v5::strong_ptr<hal::velocity_motor> prop_motor_array[] = {
+  hal::v5::strong_ptr<propulsion_controller> prop_motor_array[] = {
     resources::front_left_prop(),
     resources::front_right_prop(),
     resources::back_left_prop(),
@@ -46,24 +46,24 @@ void application()
   float rpm = 20;
   for (uint8_t i = 0; i < prop_motors.size(); i++) {
     if (i % 2) {
-      prop_motors[i]->drive(rpm);
+      prop_motors[i]->set_target_velocity(rpm);
     } else {
-      prop_motors[i]->drive(-rpm);
+      prop_motors[i]->set_target_velocity(-rpm);
     }
   }
   hal::delay(*clock, 8s);
   hal::print(*console, "backward\n");
   for (uint8_t i = 0; i < prop_motors.size(); i++) {
     if (i % 2) {
-      prop_motors[i]->drive(-rpm);
+      prop_motors[i]->set_target_velocity(-rpm);
     } else {
-      prop_motors[i]->drive(rpm);
+      prop_motors[i]->set_target_velocity(rpm);
     }
   }
   hal::delay(*clock, 8s);
   hal::print(*console, "Fin\n");
   for (uint8_t i = 0; i < prop_motors.size(); i++) {
-    prop_motors[i]->drive(0);
+    prop_motors[i]->set_target_velocity(0);
   }
 }
 }  // namespace sjsu::drive

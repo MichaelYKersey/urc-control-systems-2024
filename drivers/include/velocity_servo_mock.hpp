@@ -5,7 +5,7 @@
 
 namespace sjsu::drivers {
 
-class velocity_servo_mock : hal::velocity_servo
+class velocity_servo_mock : public hal::velocity_servo
 {
 public:
   velocity_servo_mock(hal::v5::strong_ptr<hal::steady_clock> p_clock,

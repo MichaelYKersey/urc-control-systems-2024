@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector2d.hpp>
 #include <cmath>
 #include <libhal-arm-mcu/stm32f1/input_pin.hpp>
 #include <libhal/motor.hpp>
@@ -9,7 +8,11 @@
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/units.hpp>
+#include <propulsion_controller.hpp>
+#include <steer_controller.hpp>
 #include <swerve_structs.hpp>
+#include <vector2d.hpp>
+
 
 namespace sjsu::drive {
 
@@ -39,18 +42,14 @@ public:
   swerve_module_settings settings;
 
   /**
-   * @param p_steer_servo velocity servo for steer position control and feedback
-   * @param p_steer_homing_motor velocity motor for steer homing free spin
-   * @param p_prop_motor velocity motor for propulsion velocity control
-   * @param p_limit_switch limit switch for homing
+   * @param p_steer_controller steer controller for the module
+   * @param p_propulsion_controller propulsion controller for the module
    * @param p_clock steady clock
    * @param p_settings module config info
    */
   swerve_module(
-    hal::v5::strong_ptr<hal::velocity_servo> p_steer_servo,
-    hal::v5::strong_ptr<hal::velocity_motor> p_steer_homing_motor,
-    hal::v5::strong_ptr<hal::velocity_motor> p_prop_motor,
-    hal::v5::strong_ptr<hal::input_pin> p_limit_switch,
+    hal::v5::strong_ptr<steer_controller> p_steer_controller,
+    hal::v5::strong_ptr<propulsion_controller> p_propulsion_controller,
     hal::v5::strong_ptr<hal::steady_clock> p_clock,
     swerve_module_settings p_settings);
   /**
@@ -120,27 +119,11 @@ public:
   float get_steer_offset();
 
 private:
-  hal::degrees get_steer_motor_position();
-  void set_steer_motor_position(hal::degrees p_position);
-  void set_steer_motor_velocity(hal::rpm p_velocity);
-
-  hal::rpm get_prop_motor_velocity();
-  void set_prop_motor_velocity(hal::rpm p_velocity);
-
-  // velocity_servo handles normal steer operation: position set + position read
-  hal::v5::strong_ptr<hal::velocity_servo> m_steer_servo;
-  // velocity_motor handles steer homing: free spin until limit switch triggers
-  // TODO: resource file must provide both m_steer_servo and m_homing_motor
-  //       as two interface views of the same underlying steer motor hardware
-  hal::v5::strong_ptr<hal::velocity_motor> m_steer_motor;
-  hal::v5::strong_ptr<hal::velocity_motor> m_prop_motor;
-  hal::v5::strong_ptr<hal::input_pin> m_limit_switch;
+  hal::v5::strong_ptr<steer_controller> m_steer_controller;
+  hal::v5::strong_ptr<propulsion_controller> m_propulsion_controller;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
   swerve_module_state m_target_state;
   swerve_module_state m_actual_state_cache;
-  // the position reading when facing forward using the interface for the steer
-  // motor (NAN indicates it has not been homed before)
-  hal::degrees m_steer_offset = NAN;
   hal::time_duration m_tolerance_last_changed = 0ns;
   // true = out of tolerance
   bool m_stable_tolerance_state = false;

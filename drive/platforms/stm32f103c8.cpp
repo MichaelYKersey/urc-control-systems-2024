@@ -14,7 +14,6 @@
 
 #include <array>
 #include <cstdint>
-#include <libhal-actuator/smart_servo/rmd/mc_x_v2.hpp>
 #include <libhal-arm-mcu/dwt_counter.hpp>
 #include <libhal-arm-mcu/startup.hpp>
 #include <libhal-arm-mcu/stm32f1/adc.hpp>
@@ -45,7 +44,9 @@
 #include <libhal/units.hpp>
 
 #include <memory_resource>
+#include <propulsion_controller_mock.hpp>
 #include <resource_list.hpp>
+#include <steer_controller_mock.hpp>
 #include <swerve_module.hpp>
 #include <utility>
 
@@ -237,161 +238,6 @@ constexpr uint16_t back_left_steer_can_id = 0x144;
 constexpr uint16_t back_left_prop_can_id = 0x148;
 constexpr uint16_t back_right_steer_can_id = 0x14F;
 constexpr uint16_t back_right_prop_can_id = 0x153;
-
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> make_rmd(uint16_t p_address)
-{
-  auto clock_ref = resources::clock();
-  auto transceiver = resources::can_transceiver();
-  auto idf = get_new_can_filter();
-  return hal::v5::make_strong_ptr<hal::actuator::rmd_mc_x_v2>(
-    driver_allocator(), *transceiver, *idf, *clock_ref, 36.0f, p_address);
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> front_left_steer_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_left_steer()
-{
-  auto c = console();
-  if (not front_left_steer_ptr) {
-    try {
-      front_left_steer_ptr = make_rmd(front_left_steer_can_id);
-      front_left_steer_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "Front left steer failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return front_left_steer_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> front_left_prop_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_left_prop()
-{
-  if (not front_left_prop_ptr) {
-    try {
-      front_left_prop_ptr = make_rmd(front_left_prop_can_id);
-      front_left_prop_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "Front left prop failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return front_left_prop_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> front_right_steer_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_right_steer()
-{
-  if (not front_right_steer_ptr) {
-    try {
-      front_right_steer_ptr = make_rmd(front_right_steer_can_id);
-      front_right_steer_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "Front right steer failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return front_right_steer_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> front_right_prop_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> front_right_prop()
-{
-  if (not front_right_prop_ptr) {
-    try {
-      front_right_prop_ptr = make_rmd(front_right_prop_can_id);
-      front_right_prop_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "Front right prop failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return front_right_prop_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> back_left_steer_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_left_steer()
-{
-  if (not back_left_steer_ptr) {
-    try {
-      back_left_steer_ptr = make_rmd(back_left_steer_can_id);
-      back_left_steer_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "back left steer failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return back_left_steer_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> back_left_prop_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_left_prop()
-{
-  if (not back_left_prop_ptr) {
-    try {
-      back_left_prop_ptr = make_rmd(back_left_prop_can_id);
-      back_left_prop_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = resources::console();
-      print<64>(*console_ref,
-                "back left prop failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return back_left_prop_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> back_right_steer_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_right_steer()
-{
-  if (not back_right_steer_ptr) {
-    try {
-      back_right_steer_ptr = make_rmd(back_right_steer_can_id);
-      back_right_steer_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "back right steer failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return back_right_steer_ptr;
-}
-
-hal::v5::optional_ptr<hal::actuator::rmd_mc_x_v2> back_right_prop_ptr;
-hal::v5::strong_ptr<hal::actuator::rmd_mc_x_v2> back_right_prop()
-{
-  if (not back_right_prop_ptr) {
-    try {
-      back_right_prop_ptr = make_rmd(back_right_prop_can_id);
-      back_right_prop_ptr->velocity_control(0);
-    } catch (hal::exception e) {
-      auto console_ref = console();
-      print<64>(*console_ref,
-                "back right prop failed, error code: %d\n",
-                e.error_code());
-      throw;
-    }
-  }
-  return back_right_prop_ptr;
-}
-
 constexpr swerve_module_settings front_left_settings{
   .position = vector2d(0.487, 0.340),
   .limit_switch_position = 135.0,
@@ -416,6 +262,164 @@ constexpr swerve_module_settings back_right_settings{
   .home_clockwise = true,
   .drive_forward_clockwise = false
 };
+
+hal::v5::strong_ptr<steer_controller> make_steer_controller(
+  swerve_module_settings p_settings,
+  uint16_t p_address [[maybe_unused]])
+{
+  auto clock_ref = resources::clock();
+  steer_controller_mock m(
+    clock_ref, p_settings.turn_speed, p_settings.limit_switch_position);
+  return hal::v5::make_strong_ptr<steer_controller_mock>(driver_allocator(), m);
+}
+hal::v5::strong_ptr<propulsion_controller> make_propulsion_controller(
+  swerve_module_settings p_settings,
+  uint16_t p_address [[maybe_unused]])
+{
+  auto clock_ref = resources::clock();
+  propulsion_controller_mock m(clock_ref,
+                               p_settings.max_speed / p_settings.mps_to_rpm,
+                               p_settings.acceleration / p_settings.mps_to_rpm);
+  return hal::v5::make_strong_ptr<propulsion_controller_mock>(
+    driver_allocator(), m);
+}
+
+hal::v5::optional_ptr<steer_controller> front_left_steer_ptr;
+hal::v5::strong_ptr<steer_controller> front_left_steer()
+{
+  if (not front_left_steer_ptr) {
+    try {
+      front_left_steer_ptr = make_steer_controller(front_left_settings, front_left_steer_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "Front left steer failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return front_left_steer_ptr;
+}
+hal::v5::optional_ptr<steer_controller> front_right_steer_ptr;
+hal::v5::strong_ptr<steer_controller> front_right_steer()
+{
+  if (not front_right_steer_ptr) {
+    try {
+      front_right_steer_ptr = make_steer_controller(front_right_settings, front_right_steer_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "Front right steer failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return front_right_steer_ptr;
+}
+hal::v5::optional_ptr<steer_controller> back_left_steer_ptr;
+hal::v5::strong_ptr<steer_controller> back_left_steer()
+{
+  if (not back_left_steer_ptr) {
+    try {
+      back_left_steer_ptr = make_steer_controller(back_left_settings, back_left_steer_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "back left steer failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return back_left_steer_ptr;
+}
+hal::v5::optional_ptr<steer_controller> back_right_steer_ptr;
+hal::v5::strong_ptr<steer_controller> back_right_steer()
+{
+  if (not back_right_steer_ptr) {
+    try {
+      back_right_steer_ptr = make_steer_controller(back_right_settings, back_right_steer_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "back right steer failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return back_right_steer_ptr;
+}
+
+hal::v5::optional_ptr<propulsion_controller> front_left_prop_ptr;
+hal::v5::strong_ptr<propulsion_controller> front_left_prop()
+{
+  if (not front_left_prop_ptr) {
+    try {
+      front_left_prop_ptr = make_propulsion_controller(front_left_settings, front_left_prop_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "Front left prop failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return front_left_prop_ptr;
+}
+
+
+hal::v5::optional_ptr<propulsion_controller> front_right_prop_ptr;
+hal::v5::strong_ptr<propulsion_controller> front_right_prop()
+{
+  if (not front_right_prop_ptr) {
+    try {
+      front_right_prop_ptr = make_propulsion_controller(front_right_settings, front_right_prop_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "Front right prop failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return front_right_prop_ptr;
+}
+
+
+hal::v5::optional_ptr<propulsion_controller> back_left_prop_ptr;
+hal::v5::strong_ptr<propulsion_controller> back_left_prop()
+{
+  if (not back_left_prop_ptr) {
+    try {
+      back_left_prop_ptr = make_propulsion_controller(back_left_settings, back_left_prop_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = resources::console();
+      print<64>(*console_ref,
+                "back left prop failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return back_left_prop_ptr;
+}
+
+
+hal::v5::optional_ptr<propulsion_controller> back_right_prop_ptr;
+hal::v5::strong_ptr<propulsion_controller> back_right_prop()
+{
+  if (not back_right_prop_ptr) {
+    try {
+      back_right_prop_ptr = make_propulsion_controller(back_right_settings, back_right_prop_can_id);
+    } catch (hal::exception e) {
+      auto console_ref = console();
+      print<64>(*console_ref,
+                "back right prop failed, error code: %d\n",
+                e.error_code());
+      throw;
+    }
+  }
+  return back_right_prop_ptr;
+}
+
 hal::v5::optional_ptr<swerve_module> front_left_swerve_module_ptr;
 hal::v5::strong_ptr<swerve_module> front_left_swerve_module()
 {
@@ -424,7 +428,6 @@ hal::v5::strong_ptr<swerve_module> front_left_swerve_module()
       hal::v5::make_strong_ptr<swerve_module>(driver_allocator(),
                                               front_left_steer(),
                                               front_left_prop(),
-                                              front_left_limit_switch(),
                                               clock(),
                                               front_left_settings);
   }
@@ -438,7 +441,6 @@ hal::v5::strong_ptr<swerve_module> front_right_swerve_module()
       hal::v5::make_strong_ptr<swerve_module>(driver_allocator(),
                                               front_right_steer(),
                                               front_right_prop(),
-                                              front_right_limit_switch(),
                                               clock(),
                                               front_right_settings);
   }
@@ -453,7 +455,6 @@ hal::v5::strong_ptr<swerve_module> back_left_swerve_module()
       hal::v5::make_strong_ptr<swerve_module>(driver_allocator(),
                                               back_left_steer(),
                                               back_left_prop(),
-                                              back_left_limit_switch(),
                                               clock(),
                                               back_left_settings);
   }
@@ -468,7 +469,6 @@ hal::v5::strong_ptr<swerve_module> back_right_swerve_module()
       hal::v5::make_strong_ptr<swerve_module>(driver_allocator(),
                                               back_right_steer(),
                                               back_right_prop(),
-                                              back_right_limit_switch(),
                                               clock(),
                                               back_right_settings);
   }
@@ -560,23 +560,24 @@ void initialize_platform()
 }
 void resources::stop()
 {
-  auto can_transceiver_ref = can_transceiver();
-  auto clock_ref = clock();
-  hal::can_message message = { .id = 0,
-                               .length = 8,
-                               .payload = { 0x81, 0, 0, 0, 0, 0, 0, 0 } };
-  constexpr uint16_t motor_ids_array[] = {
-    front_left_steer_can_id, front_left_prop_can_id, front_right_steer_can_id,
-    front_right_prop_can_id, back_left_steer_can_id, back_left_prop_can_id,
-    back_right_steer_can_id, back_right_prop_can_id
-  };
-  std::span motor_ids(motor_ids_array);
-  while (true) {
-    for (unsigned int i = 0; i < motor_ids.size(); i++) {
-      message.id = motor_ids[i];
-      can_transceiver_ref->send(message);
-      hal::delay(*clock_ref, 5ms);
-    }
-  }
+  //TODO: Reimplement
+  // auto can_transceiver_ref = can_transceiver();
+  // auto clock_ref = clock();
+  // hal::can_message message = { .id = 0,
+  //                              .length = 8,
+  //                              .payload = { 0x81, 0, 0, 0, 0, 0, 0, 0 } };
+  // constexpr uint16_t motor_ids_array[] = {
+  //   front_left_steer_can_id, front_left_prop_can_id, front_right_steer_can_id,
+  //   front_right_prop_can_id, back_left_steer_can_id, back_left_prop_can_id,
+  //   back_right_steer_can_id, back_right_prop_can_id
+  // };
+  // std::span motor_ids(motor_ids_array);
+  // while (true) {
+  //   for (unsigned int i = 0; i < motor_ids.size(); i++) {
+  //     message.id = motor_ids[i];
+  //     can_transceiver_ref->send(message);
+  //     hal::delay(*clock_ref, 5ms);
+  //   }
+  // }
 }
 }  // namespace sjsu::drive

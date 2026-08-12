@@ -10,7 +10,6 @@ DEMOS
     # can_stability_test
     chassis_vel_demo
     iterate_state
-    limit_switch_test
     # poll_motor_connections
     prop_motor_test
     sequential_homing_demo

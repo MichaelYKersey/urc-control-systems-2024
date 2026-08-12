@@ -182,54 +182,6 @@ hal::v5::strong_ptr<hal::can_bus_manager> can_bus_manager()
   return can_bus_manager_ptr;
 }
 
-hal::v5::optional_ptr<hal::input_pin> front_left_limit_switch_ptr;
-hal::v5::strong_ptr<hal::input_pin> front_left_limit_switch()
-{
-  if (not front_left_limit_switch_ptr) {
-    auto front_left_limit_switch = gpio_b().acquire_input_pin(12);  // 4
-    front_left_limit_switch_ptr =
-      hal::v5::make_strong_ptr<decltype(front_left_limit_switch)>(
-        driver_allocator(), std::move(front_left_limit_switch));
-  }
-  return front_left_limit_switch_ptr;
-}
-
-hal::v5::optional_ptr<hal::input_pin> front_right_limit_switch_ptr;
-hal::v5::strong_ptr<hal::input_pin> front_right_limit_switch()
-{
-  if (not front_right_limit_switch_ptr) {
-    auto front_right_limit_switch = gpio_b().acquire_input_pin(15);  // 7
-    front_right_limit_switch_ptr =
-      hal::v5::make_strong_ptr<decltype(front_right_limit_switch)>(
-        driver_allocator(), std::move(front_right_limit_switch));
-  }
-  return front_right_limit_switch_ptr;
-}
-
-hal::v5::optional_ptr<hal::input_pin> back_left_limit_switch_ptr;
-hal::v5::strong_ptr<hal::input_pin> back_left_limit_switch()
-{
-  if (not back_left_limit_switch_ptr) {
-    auto back_left_limit_switch = gpio_b().acquire_input_pin(14);  // 6
-    back_left_limit_switch_ptr =
-      hal::v5::make_strong_ptr<decltype(back_left_limit_switch)>(
-        driver_allocator(), std::move(back_left_limit_switch));
-  }
-  return back_left_limit_switch_ptr;
-}
-
-hal::v5::optional_ptr<hal::input_pin> back_right_limit_switch_ptr;
-hal::v5::strong_ptr<hal::input_pin> back_right_limit_switch()
-{
-  if (not back_right_limit_switch_ptr) {
-    auto back_right_limit_switch = gpio_b().acquire_input_pin(13);  // 5
-    back_right_limit_switch_ptr =
-      hal::v5::make_strong_ptr<decltype(back_right_limit_switch)>(
-        driver_allocator(), std::move(back_right_limit_switch));
-  }
-  return back_right_limit_switch_ptr;
-}
-
 constexpr uint16_t front_left_steer_can_id = 0x14C;
 constexpr uint16_t front_left_prop_can_id = 0x141;
 constexpr uint16_t front_right_steer_can_id = 0x142;

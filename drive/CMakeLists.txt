@@ -16,6 +16,7 @@ DEMOS
     serial_command_demo
     simple_can_reply_demo
     simple_state_set_demo
+    temp_rmd_x7_test
 INCLUDES
     .
     ../drivers/include
@@ -29,6 +30,7 @@ SOURCES
     src/mission_control_manager.cpp
     src/swerve_module.cpp
     src/propulsion_controller_mock.cpp
+    src/propulsion_controller_rmd_x7.cpp
     src/steer_controller_mock.cpp
 
 PACKAGES

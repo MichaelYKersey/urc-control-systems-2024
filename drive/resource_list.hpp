@@ -32,6 +32,7 @@ hal::v5::strong_ptr<hal::output_pin> status_led();
 hal::v5::strong_ptr<hal::can_transceiver> can_transceiver();
 hal::v5::strong_ptr<hal::can_bus_manager> can_bus_manager();
 hal::v5::strong_ptr<hal::can_transceiver> can_transceiver();
+hal::v5::strong_ptr<hal::can_identifier_filter> get_new_can_filter();
 hal::v5::strong_ptr<hal::input_pin> front_left_limit_switch();
 hal::v5::strong_ptr<hal::input_pin> front_right_limit_switch();
 hal::v5::strong_ptr<hal::input_pin> back_left_limit_switch();

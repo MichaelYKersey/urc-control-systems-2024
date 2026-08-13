@@ -44,7 +44,7 @@
 #include <libhal/units.hpp>
 
 #include <memory_resource>
-#include <propulsion_controller_mock.hpp>
+#include <propulsion_controller_rmd_x7.hpp>
 #include <resource_list.hpp>
 #include <steer_controller_mock.hpp>
 #include <swerve_module.hpp>
@@ -225,15 +225,21 @@ hal::v5::strong_ptr<steer_controller> make_steer_controller(
   return hal::v5::make_strong_ptr<steer_controller_mock>(driver_allocator(), m);
 }
 hal::v5::strong_ptr<propulsion_controller> make_propulsion_controller(
-  swerve_module_settings p_settings,
+  swerve_module_settings p_settings [[maybe_unused]],
   uint16_t p_address [[maybe_unused]])
 {
-  auto clock_ref = resources::clock();
-  propulsion_controller_mock m(clock_ref,
-                               p_settings.max_speed / p_settings.mps_to_rpm,
-                               p_settings.acceleration / p_settings.mps_to_rpm);
-  return hal::v5::make_strong_ptr<propulsion_controller_mock>(
-    driver_allocator(), m);
+  auto clock_ref = clock();
+  auto can_fillter_ref = resources::get_new_can_filter();
+  auto can_transceiver_ref = resources::can_transceiver();
+  auto motor_ptr =
+    hal::v5::make_strong_ptr<hal::actuator::rmd_drc_v2>(driver_allocator(),
+                                                        *can_transceiver_ref,
+                                                        *can_fillter_ref,
+                                                        *clock_ref,
+                                                        1.0f,
+                                                        p_address);
+  return hal::v5::make_strong_ptr<propulsion_controller_rmd_x7>(
+    driver_allocator(), motor_ptr);
 }
 
 hal::v5::optional_ptr<steer_controller> front_left_steer_ptr;
@@ -241,7 +247,8 @@ hal::v5::strong_ptr<steer_controller> front_left_steer()
 {
   if (not front_left_steer_ptr) {
     try {
-      front_left_steer_ptr = make_steer_controller(front_left_settings, front_left_steer_can_id);
+      front_left_steer_ptr =
+        make_steer_controller(front_left_settings, front_left_steer_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -257,7 +264,8 @@ hal::v5::strong_ptr<steer_controller> front_right_steer()
 {
   if (not front_right_steer_ptr) {
     try {
-      front_right_steer_ptr = make_steer_controller(front_right_settings, front_right_steer_can_id);
+      front_right_steer_ptr =
+        make_steer_controller(front_right_settings, front_right_steer_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -273,7 +281,8 @@ hal::v5::strong_ptr<steer_controller> back_left_steer()
 {
   if (not back_left_steer_ptr) {
     try {
-      back_left_steer_ptr = make_steer_controller(back_left_settings, back_left_steer_can_id);
+      back_left_steer_ptr =
+        make_steer_controller(back_left_settings, back_left_steer_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -289,7 +298,8 @@ hal::v5::strong_ptr<steer_controller> back_right_steer()
 {
   if (not back_right_steer_ptr) {
     try {
-      back_right_steer_ptr = make_steer_controller(back_right_settings, back_right_steer_can_id);
+      back_right_steer_ptr =
+        make_steer_controller(back_right_settings, back_right_steer_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -306,7 +316,8 @@ hal::v5::strong_ptr<propulsion_controller> front_left_prop()
 {
   if (not front_left_prop_ptr) {
     try {
-      front_left_prop_ptr = make_propulsion_controller(front_left_settings, front_left_prop_can_id);
+      front_left_prop_ptr =
+        make_propulsion_controller(front_left_settings, front_left_prop_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -318,13 +329,13 @@ hal::v5::strong_ptr<propulsion_controller> front_left_prop()
   return front_left_prop_ptr;
 }
 
-
 hal::v5::optional_ptr<propulsion_controller> front_right_prop_ptr;
 hal::v5::strong_ptr<propulsion_controller> front_right_prop()
 {
   if (not front_right_prop_ptr) {
     try {
-      front_right_prop_ptr = make_propulsion_controller(front_right_settings, front_right_prop_can_id);
+      front_right_prop_ptr = make_propulsion_controller(
+        front_right_settings, front_right_prop_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -336,13 +347,13 @@ hal::v5::strong_ptr<propulsion_controller> front_right_prop()
   return front_right_prop_ptr;
 }
 
-
 hal::v5::optional_ptr<propulsion_controller> back_left_prop_ptr;
 hal::v5::strong_ptr<propulsion_controller> back_left_prop()
 {
   if (not back_left_prop_ptr) {
     try {
-      back_left_prop_ptr = make_propulsion_controller(back_left_settings, back_left_prop_can_id);
+      back_left_prop_ptr =
+        make_propulsion_controller(back_left_settings, back_left_prop_can_id);
     } catch (hal::exception e) {
       auto console_ref = resources::console();
       print<64>(*console_ref,
@@ -354,13 +365,13 @@ hal::v5::strong_ptr<propulsion_controller> back_left_prop()
   return back_left_prop_ptr;
 }
 
-
 hal::v5::optional_ptr<propulsion_controller> back_right_prop_ptr;
 hal::v5::strong_ptr<propulsion_controller> back_right_prop()
 {
   if (not back_right_prop_ptr) {
     try {
-      back_right_prop_ptr = make_propulsion_controller(back_right_settings, back_right_prop_can_id);
+      back_right_prop_ptr =
+        make_propulsion_controller(back_right_settings, back_right_prop_can_id);
     } catch (hal::exception e) {
       auto console_ref = console();
       print<64>(*console_ref,
@@ -512,24 +523,25 @@ void initialize_platform()
 }
 void resources::stop()
 {
-  //TODO: Reimplement
-  // auto can_transceiver_ref = can_transceiver();
-  // auto clock_ref = clock();
-  // hal::can_message message = { .id = 0,
-  //                              .length = 8,
-  //                              .payload = { 0x81, 0, 0, 0, 0, 0, 0, 0 } };
-  // constexpr uint16_t motor_ids_array[] = {
-  //   front_left_steer_can_id, front_left_prop_can_id, front_right_steer_can_id,
-  //   front_right_prop_can_id, back_left_steer_can_id, back_left_prop_can_id,
-  //   back_right_steer_can_id, back_right_prop_can_id
-  // };
-  // std::span motor_ids(motor_ids_array);
-  // while (true) {
-  //   for (unsigned int i = 0; i < motor_ids.size(); i++) {
-  //     message.id = motor_ids[i];
-  //     can_transceiver_ref->send(message);
-  //     hal::delay(*clock_ref, 5ms);
-  //   }
-  // }
+  // TODO: Reimplement
+  //  auto can_transceiver_ref = can_transceiver();
+  //  auto clock_ref = clock();
+  //  hal::can_message message = { .id = 0,
+  //                               .length = 8,
+  //                               .payload = { 0x81, 0, 0, 0, 0, 0, 0, 0 } };
+  //  constexpr uint16_t motor_ids_array[] = {
+  //    front_left_steer_can_id, front_left_prop_can_id,
+  //    front_right_steer_can_id, front_right_prop_can_id,
+  //    back_left_steer_can_id, back_left_prop_can_id, back_right_steer_can_id,
+  //    back_right_prop_can_id
+  //  };
+  //  std::span motor_ids(motor_ids_array);
+  //  while (true) {
+  //    for (unsigned int i = 0; i < motor_ids.size(); i++) {
+  //      message.id = motor_ids[i];
+  //      can_transceiver_ref->send(message);
+  //      hal::delay(*clock_ref, 5ms);
+  //    }
+  //  }
 }
 }  // namespace sjsu::drive

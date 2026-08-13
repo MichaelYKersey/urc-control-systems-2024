@@ -1,5 +1,6 @@
 #include "propulsion_controller.hpp"
 #include "steer_controller.hpp"
+#include <array>
 #include <drivetrain_math.hpp>
 #include <libhal-exceptions/control.hpp>
 #include <libhal-util/serial.hpp>
@@ -19,7 +20,7 @@ void application()
   auto console = resources::console();
   hal::print(*console, "app starting\n");
   // TODO: resource file must return hal::velocity_servo instead of rmd_mc_x_v2
-  hal::v5::strong_ptr<steer_controller> steer_motor_array[] = {
+  std::array steer_motor_array = {
     resources::front_left_steer(),
     resources::front_right_steer(),
     resources::back_left_steer(),
@@ -34,11 +35,11 @@ void application()
   hal::print(*console, "steer locked\n");
 
   // TODO: resource file must return hal::velocity_motor instead of rmd_mc_x_v2
-  hal::v5::strong_ptr<propulsion_controller> prop_motor_array[] = {
+  std::array prop_motor_array = {
     resources::front_left_prop(),
-    resources::front_right_prop(),
-    resources::back_left_prop(),
-    resources::back_right_prop()
+    // resources::front_right_prop(),
+    // resources::back_left_prop(),
+    // resources::back_right_prop()
   };
   std::span prop_motors{ prop_motor_array };
   hal::delay(*clock, 3s);

@@ -27,7 +27,7 @@ class perseus_bldc
 {
 public:
   perseus_bldc(hal::v5::strong_ptr<hal::can_transceiver> p_can_transceiver,
-               hal::v5::strong_ptr<hal::steady_clock> p_clock,
+               hal::v5::strong_ptr<hal::steady_clock> p_clock,  
                hal::u32 p_can_id,
                hal::time_duration p_max_response_time = 500ms);
   // currently inorder of messages on CAN ID doc

@@ -1,3 +1,4 @@
+#pragma once
 #include <libhal/pointers.hpp>
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>

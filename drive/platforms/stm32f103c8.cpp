@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "perseus_bldc.hpp"
+#include "steer_controller.hpp"
+#include "steer_controller_perseus.hpp"
 #include <array>
 #include <cstdint>
 #include <libhal-arm-mcu/dwt_counter.hpp>
@@ -64,7 +67,7 @@ std::pmr::polymorphic_allocator<> driver_allocator()
   return &resource;
 }
 
-[[maybe_unused]] static auto& gpio_a() 
+[[maybe_unused]] static auto& gpio_a()
 {
   static hal::stm32f1::gpio<st_peripheral::gpio_a> gpio;
   return gpio;
@@ -112,7 +115,8 @@ hal::v5::strong_ptr<hal::output_pin> status_led()
   return led_ptr;
 }
 
-static hal::v5::optional_ptr<hal::stm32f1::can_peripheral_manager_v2> can_manager;
+static hal::v5::optional_ptr<hal::stm32f1::can_peripheral_manager_v2>
+  can_manager;
 static std::array<hal::v5::optional_ptr<hal::can_mask_filter>, 2> can_mask;
 static void initialize_can()
 {
@@ -215,13 +219,16 @@ static constexpr swerve_module_settings back_right_settings{
 };
 
 hal::v5::strong_ptr<steer_controller> make_steer_controller(
-  swerve_module_settings p_settings,
-  uint16_t p_address [[maybe_unused]])
+  swerve_module_settings p_settings [[maybe_unused]],
+  uint16_t p_address)
 {
   auto clock_ref = resources::clock();
-  steer_controller_mock m(
-    clock_ref, p_settings.turn_speed, p_settings.limit_switch_position);
-  return hal::v5::make_strong_ptr<steer_controller_mock>(driver_allocator(), m);
+  auto can_transceiver_ref = resources::can_transceiver();
+  auto perseus = hal::v5::make_strong_ptr<drivers::perseus_bldc>(
+    driver_allocator(), can_transceiver_ref, clock_ref, p_address);
+  steer_controller_perseus m(perseus, clock_ref);
+  return hal::v5::make_strong_ptr<steer_controller_perseus>(driver_allocator(),
+                                                            m);
 }
 hal::v5::strong_ptr<propulsion_controller> make_propulsion_controller(
   swerve_module_settings p_settings [[maybe_unused]],
@@ -424,6 +431,7 @@ hal::v5::strong_ptr<swerve_module> back_left_swerve_module()
 }
 
 static hal::v5::optional_ptr<swerve_module> back_right_swerve_module_ptr;
+hal::v5::strong_ptr<swerve_module> back_right_swerve_module()
 {
   if (not back_right_swerve_module_ptr) {
     back_right_swerve_module_ptr =

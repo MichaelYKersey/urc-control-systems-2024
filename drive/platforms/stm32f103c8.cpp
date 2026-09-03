@@ -185,8 +185,8 @@ hal::v5::strong_ptr<hal::can_bus_manager> can_bus_manager()
   return can_bus_manager_ptr;
 }
 
-constexpr uint16_t front_left_steer_can_id = 0x14C;
-constexpr uint16_t front_left_prop_can_id = 0x141;
+constexpr uint16_t front_left_steer_can_id = 0x03;
+constexpr uint16_t front_left_prop_can_id = 0x143;
 constexpr uint16_t front_right_steer_can_id = 0x142;
 constexpr uint16_t front_right_prop_can_id = 0x145;
 constexpr uint16_t back_left_steer_can_id = 0x144;
@@ -195,26 +195,18 @@ constexpr uint16_t back_right_steer_can_id = 0x14F;
 constexpr uint16_t back_right_prop_can_id = 0x153;
 constexpr swerve_module_settings front_left_settings{
   .position = vector2d(0.487, 0.340),
-  .limit_switch_position = 135.0,
-  .home_clockwise = false,
   .drive_forward_clockwise = true
 };
 static constexpr swerve_module_settings front_right_settings{
   .position = vector2d(0.487, -0.340),
-  .limit_switch_position = -135.0,
-  .home_clockwise = true,
   .drive_forward_clockwise = false
 };
 static constexpr swerve_module_settings back_left_settings{
   .position = vector2d(-0.487, 0.340),
-  .limit_switch_position = 135.0,
-  .home_clockwise = false,
   .drive_forward_clockwise = true
 };
 static constexpr swerve_module_settings back_right_settings{
   .position = vector2d(-0.487, -0.340),
-  .limit_switch_position = -135.0,
-  .home_clockwise = true,
   .drive_forward_clockwise = false
 };
 

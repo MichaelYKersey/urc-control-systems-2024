@@ -60,6 +60,7 @@ perseus_bldc::perseus_bldc(
   , m_max_response_time(p_max_response_time)
 {
   //TODO: run any initialization code (such as killing power)
+  kill_power();
 }
 
 void perseus_bldc::kill_power()

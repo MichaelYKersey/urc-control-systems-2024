@@ -45,23 +45,18 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
   if (not m_steer_controller->is_homed()) {
     throw hal::resource_unavailable_try_again(this);
   }
+  if (!can_reach_state(m_target_state)) {
+    auto console = resources::console();
+    hal::print(*console, "can't reach state\n");
+    throw hal::argument_out_of_domain(this);
+  }
   // NAN is to indicate a non-specific angle (angle doesn't matter)
   if (p_target_state.steer_angle == NAN &&
       p_target_state.propulsion_velocity == 0) {
     stop();
   }
-  if (!valid_interpolation(m_target_state)) {
-    throw hal::argument_out_of_domain(this);
-  } else {
-    m_target_state = p_target_state;
-    // cap valid interpolations
-    m_target_state.steer_angle = std::clamp(
-      m_target_state.steer_angle, settings.min_angle, settings.max_angle);
-    m_target_state.propulsion_velocity =
-      std::clamp(m_target_state.propulsion_velocity,
-                 -settings.max_speed,
-                 settings.max_speed);
-  }
+
+  m_target_state = p_target_state;
   m_steer_controller->set_target_position(m_target_state.steer_angle);
   hal::rpm velocity = m_target_state.propulsion_velocity * settings.mps_to_rpm;
   if (settings.drive_forward_clockwise) {
@@ -72,26 +67,21 @@ void swerve_module::set_target_state(swerve_module_state const& p_target_state)
 
 bool swerve_module::can_reach_state(swerve_module_state const& p_state) const
 {
-  return ((p_state.propulsion_velocity <= std::abs(settings.max_speed)) &&
-          (p_state.steer_angle == NAN ||
-           (p_state.steer_angle >= settings.min_angle &&
-            p_state.steer_angle <= settings.max_angle)));
-}
-bool swerve_module::valid_interpolation(
-  swerve_module_state const& p_state) const
-{
-  return ((p_state.steer_angle == NAN ||
-           p_state.propulsion_velocity <= std::abs(settings.max_speed) ||
-           (p_state.propulsion_velocity >= 0 &&
-            p_state.propulsion_velocity <=
-              m_actual_state_cache.propulsion_velocity) ||
-           (p_state.propulsion_velocity <= 0 &&
-            p_state.propulsion_velocity >=
-              m_actual_state_cache.propulsion_velocity)) &&
-          (p_state.steer_angle >= settings.min_angle ||
-           p_state.steer_angle >= m_actual_state_cache.steer_angle) &&
-          (p_state.steer_angle <= settings.max_angle ||
-           p_state.steer_angle <= m_actual_state_cache.steer_angle));
+  // stoping with out regard for angle
+  if ((p_state.propulsion_velocity <= std::abs(settings.max_speed)) &&
+      std::isnan(p_state.steer_angle)) {
+    return true;
+  }
+  // steer angle out of range
+  if (p_state.steer_angle < settings.min_angle ||
+      p_state.steer_angle > settings.max_angle) {
+    return false;
+  }
+  // velocity out of range
+  if (std::abs(p_state.propulsion_velocity) > settings.max_speed) {
+    return false;
+  }
+  return true;
 }
 
 swerve_module_state swerve_module::get_actual_state_cache() const

@@ -73,7 +73,6 @@ public:
    * @return if the values are with in tolerances based on settings
    */
   bool can_reach_state(swerve_module_state const& p_state) const;
-  bool valid_interpolation(swerve_module_state const& p_state) const;
 
   /**
    * @brief gives the cached module state based on most recent readings

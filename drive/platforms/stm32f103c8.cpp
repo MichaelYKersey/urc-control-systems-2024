@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "perseus_bldc.hpp"
+#include "propulsion_controller_mock.hpp"
 #include "steer_controller.hpp"
 #include "steer_controller_perseus.hpp"
 #include <array>
@@ -212,32 +213,36 @@ static constexpr swerve_module_settings back_right_settings{
 
 hal::v5::strong_ptr<steer_controller> make_steer_controller(
   swerve_module_settings p_settings [[maybe_unused]],
-  uint16_t p_address)
+  uint16_t p_address[[maybe_unused]])
 {
   auto clock_ref = resources::clock();
   auto can_transceiver_ref = resources::can_transceiver();
-  auto perseus = hal::v5::make_strong_ptr<drivers::perseus_bldc>(
-    driver_allocator(), can_transceiver_ref, clock_ref, p_address);
-  steer_controller_perseus m(perseus, clock_ref);
-  return hal::v5::make_strong_ptr<steer_controller_perseus>(driver_allocator(),
-                                                            m);
+  // auto perseus = hal::v5::make_strong_ptr<drivers::perseus_bldc>(
+  //   driver_allocator(), can_transceiver_ref, clock_ref, p_address);
+  // steer_controller_perseus m(perseus, clock_ref);
+  // return hal::v5::make_strong_ptr<steer_controller_perseus>(driver_allocator(),
+  //                                                           m);
+  auto mock_steer_controller = hal::make_strong_ptr<steer_controller_mock>(driver_allocator(),clock_ref,p_settings.turn_speed,0);
+  return mock_steer_controller;
 }
 hal::v5::strong_ptr<propulsion_controller> make_propulsion_controller(
   swerve_module_settings p_settings [[maybe_unused]],
   uint16_t p_address [[maybe_unused]])
 {
   auto clock_ref = clock();
-  auto can_fillter_ref = resources::get_new_can_filter();
-  auto can_transceiver_ref = resources::can_transceiver();
-  auto motor_ptr =
-    hal::v5::make_strong_ptr<hal::actuator::rmd_drc_v2>(driver_allocator(),
-                                                        *can_transceiver_ref,
-                                                        *can_fillter_ref,
-                                                        *clock_ref,
-                                                        1.0f,
-                                                        p_address);
-  return hal::v5::make_strong_ptr<propulsion_controller_rmd_x7>(
-    driver_allocator(), motor_ptr);
+  // auto can_fillter_ref = resources::get_new_can_filter();
+  // auto can_transceiver_ref = resources::can_transceiver();
+  // auto motor_ptr =
+  //   hal::v5::make_strong_ptr<hal::actuator::rmd_drc_v2>(driver_allocator(),
+  //                                                       *can_transceiver_ref,
+  //                                                       *can_fillter_ref,
+  //                                                       *clock_ref,
+  //                                                       1.0f,
+  //                                                       p_address);
+  // return hal::v5::make_strong_ptr<propulsion_controller_rmd_x7>(
+  //   driver_allocator(), motor_ptr);
+  auto mock_steer_controller = hal::make_strong_ptr<propulsion_controller_mock>(driver_allocator(),clock_ref,p_settings.max_speed,p_settings.acceleration);
+  return mock_steer_controller;
 }
 
 static hal::v5::optional_ptr<steer_controller> front_left_steer_ptr;

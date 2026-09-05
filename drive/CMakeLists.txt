@@ -16,7 +16,6 @@ DEMOS
     serial_command_demo
     simple_can_reply_demo
     simple_state_set_demo
-    temp_rmd_x7_test
 INCLUDES
     .
     ../drivers/include

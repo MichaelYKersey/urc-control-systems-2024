@@ -23,10 +23,10 @@ private:
 
   hal::rpm update_sim();
 
-  virtual void driver_enable(bool p_state);
-  virtual void driver_drive(hal::rpm p_velocity);
-  virtual status_t driver_status();
-  virtual range_t driver_velocity_range();
+  virtual void driver_enable(bool p_state) override;
+  virtual void driver_drive(hal::rpm p_velocity) override;
+  virtual status_t driver_status() override;
+  virtual range_t driver_velocity_range() override;
 };
 
 }  // namespace sjsu::drivers

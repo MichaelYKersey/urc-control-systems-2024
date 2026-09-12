@@ -25,13 +25,13 @@ private:
 
   hal::degrees update_sim();
 
-  virtual void driver_enable(bool p_state);
-  virtual void driver_position(hal::degrees p_target_position);
-  virtual position_range_t driver_position_range();
-  virtual hal::degrees driver_get_position();
-  virtual bool driver_is_moving();
-  virtual void driver_configure(settings const& p_settings);
-  virtual status_t driver_status();
-  virtual range_t driver_velocity_range();
+  virtual void driver_enable(bool p_state) override;
+  virtual void driver_position(hal::degrees p_target_position) override;
+  virtual position_range_t driver_position_range() override;
+  virtual hal::degrees driver_get_position() override;
+  virtual bool driver_is_moving() override;
+  virtual void driver_configure(settings const& p_settings) override;
+  virtual status_t driver_status() override;
+  virtual range_t driver_velocity_range() override;
 };
 };  // namespace sjsu::drivers

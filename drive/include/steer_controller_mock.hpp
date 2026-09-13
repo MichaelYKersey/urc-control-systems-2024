@@ -12,17 +12,17 @@ public:
                         hal::rpm p_max_speed,
                         hal::degrees p_inital_position);
 
-  virtual void stop();
+  virtual void stop() override;
   
-  virtual void hard_home();
-  virtual void home();
-  virtual void home_periodic();
-  virtual bool is_homing();
-  virtual bool is_homed();
+  virtual void hard_home() override;
+  virtual void home() override;
+  virtual void home_periodic() override;
+  virtual bool is_homing() override;
+  virtual bool is_homed() override;
 
-  virtual void set_target_position(hal::degrees p_target_position);
-  virtual hal::degrees get_target_postion();
-  virtual hal::degrees get_actual_postion();
+  virtual void set_target_position(hal::degrees p_target_position) override;
+  virtual hal::degrees get_target_postion() override;
+  virtual hal::degrees get_actual_postion() override;
 
 private:
   drivers::velocity_servo_mock m_servo;

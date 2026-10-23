@@ -96,7 +96,7 @@ hal::v5::strong_ptr<hal::output_pin> status_led()
   return led_ptr;
 }
 
-hal::v5::optional_ptr<hal::output_pin> output_pin_0_ptr;
+static hal::v5::optional_ptr<hal::output_pin> output_pin_0_ptr;
 hal::v5::strong_ptr<hal::output_pin> output_pin_0()
 {
   if (not output_pin_0_ptr) {
@@ -107,7 +107,7 @@ hal::v5::strong_ptr<hal::output_pin> output_pin_0()
   return output_pin_0_ptr;
 }
 
-hal::v5::optional_ptr<hal::output_pin> output_pin_1_ptr;
+static hal::v5::optional_ptr<hal::output_pin> output_pin_1_ptr;
 hal::v5::strong_ptr<hal::output_pin> output_pin_1()
 {
   if (not output_pin_1_ptr) {
@@ -136,7 +136,7 @@ hal::v5::strong_ptr<hal::output_pin> output_pin_1()
   return timer3;
 }
 
-hal::v5::optional_ptr<hal::output_pin> pwm0_a8_ptr;
+static hal::v5::optional_ptr<hal::output_pin> pwm0_a8_ptr;
 hal::v5::strong_ptr<hal::output_pin> pwm0_a8()
 {
   if (not pwm0_a8_ptr) {
@@ -147,7 +147,7 @@ hal::v5::strong_ptr<hal::output_pin> pwm0_a8()
   return pwm0_a8_ptr;
 }
 
-hal::v5::optional_ptr<hal::output_pin> rx1_a3_ptr;
+static hal::v5::optional_ptr<hal::output_pin> rx1_a3_ptr;
 hal::v5::strong_ptr<hal::output_pin> rx1_a3()
 {
   if (not rx1_a3_ptr) {
@@ -371,7 +371,7 @@ hal::v5::strong_ptr<hal::can_transceiver> can_transceiver()
   return can_transceiver_ptr;
 }
 
-hal::v5::optional_ptr<hal::can_bus_manager> can_bus_manager_ptr;
+static hal::v5::optional_ptr<hal::can_bus_manager> can_bus_manager_ptr;
 hal::v5::strong_ptr<hal::can_bus_manager> can_bus_manager()
 {
   initialize_can();

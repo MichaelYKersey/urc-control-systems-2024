@@ -1,6 +1,7 @@
 #pragma once
 #include <libhal-arm-mcu/stm32_generic/quadrature_encoder.hpp>
 #include <libhal-util/steady_clock.hpp>
+#include <libhal/input_pin.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/rotation_sensor.hpp>
 #include <libhal/units.hpp>
@@ -148,7 +149,7 @@ public:
    * @brief Remembers the current position of the encoder as the home position.
    * This should be called when the servo is homed.
    */
-  void home_encoder();
+  void home_encoder(hal::u16 p_addr);
 
   /**
     * @brief Update velocity to the target velocity using PID control and
@@ -281,6 +282,7 @@ private:
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> m_h_bridge;
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
+  hal::v5::strong_ptr<hal::input_pin> m_homing_pin; 
   hal::u64 m_last_clock_check;
   status m_target;
   PID_settings m_reading_position_settings;

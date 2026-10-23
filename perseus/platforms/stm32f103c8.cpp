@@ -28,6 +28,7 @@
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal/can.hpp>
+#include <libhal/input_pin.hpp>
 #include <libhal/output_pin.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/pwm.hpp>
@@ -221,6 +222,18 @@ hal::v5::strong_ptr<hal::rotation_sensor> encoder()
     // or linear movement
   }
   return encoder_ptr;
+}
+
+static hal::v5::optional_ptr<hal::input_pin> homing_pin_ptr;
+hal::v5::strong_ptr<hal::input_pin> homing_pin()
+{
+  if (not homing_pin_ptr) {
+    // CHECK IF ACTUALLY THE PIN
+    auto homing_pin = gpio_c().acquire_output_pin(13);
+    led_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(driver_allocator(),
+                                                      std::move(homing_pin));
+  }
+  return homing_pin_ptr;
 }
 
 // all the pins for the switches at the bottom of the pcb

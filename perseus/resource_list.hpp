@@ -80,6 +80,8 @@ hal::v5::strong_ptr<hal::output_pin> status_led();
 hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge();
 hal::v5::strong_ptr<hal::rotation_sensor> encoder();
 hal::v5::strong_ptr<bldc_perseus> servo();
+// homing pin
+hal::v5::strong_ptr<hal::input_pin> homing_pin(); 
 // switches instatiation
 hal::v5::strong_ptr<hal::input_pin> switch_g1();
 hal::v5::strong_ptr<hal::input_pin> switch_g2();

@@ -17,6 +17,7 @@ bldc_perseus::bldc_perseus(
   : m_h_bridge(p_hbridge)
   , m_encoder(p_encoder)
   , m_clock(resources::clock())
+  , m_homing_pin(p_homing_pin) 
 {
 }
 
@@ -90,9 +91,20 @@ void bldc_perseus::update_pid_velocity(PID_settings settings)
 {
   m_reading_velocity_settings = settings;
 }
-void bldc_perseus::home_encoder()
+void bldc_perseus::home_encoder(hal::u16 p_addr)
 {
-  // TODO!
+  // elbow spins diff from track, shoulder
+  m_target.velocity = 5.0; 
+  if (p_addr == 0x123) {
+    m_target.velocity = -5.0; 
+  }
+
+  // only spin track, shoulder, elbow 
+  // finish if statement to check for those three
+  update_velocity(true); 
+  while (m_homing_pin->level() == true) {
+    update_velocity(false); 
+  }
 }
 
 hal::degrees bldc_perseus::read_angle()
@@ -102,9 +114,37 @@ hal::degrees bldc_perseus::read_angle()
 
 void bldc_perseus::update_velocity(bool from_scratch)
 {
-  // TODO : implement velocity PID control
-  if (from_scratch)
-    m_PID_prev_velocity_values.integral = 0;
+  auto console = resources::console();
+  // pid portion
+  float error = m_target.velocity - get_reading_velocity();
+  sec curr_time =
+    drivers::time_util::hal_time_duration_to_sec(get_clock_time(*m_clock));
+  sec dt = curr_time - m_PID_prev_velocity_values.prev_timestamp;
+  if (from_scratch) {
+    m_PID_prev_velocity_values.integral = 0.0f;
+  }
+  m_PID_prev_velocity_values.integral += error * dt;
+  float derivative = (error - m_PID_prev_velocity_values.last_error) / dt;
+  float p_term = m_reading_velocity_settings.kp * error;
+  float i_term =
+    m_reading_velocity_settings.ki * m_PID_prev_velocity_values.integral;
+  float d_term = m_reading_velocity_settings.kd * derivative;
+  m_PID_prev_velocity_values.last_error = error;
+  m_PID_prev_velocity_values.prev_timestamp = curr_time;
+  float pid_sum = p_term + i_term + d_term;
+  float projected_power = std::clamp(pid_sum,
+                               m_physical_servo_values.low_clamped_value,
+                               m_physical_servo_values.high_clamped_value);
+  hal::print<128>(
+    *console,
+    "Target: %f, Velocity: %f, Error: %f, pid: %f, projected: %f\n",
+    m_target.velocity,
+    get_reading_velocity(),
+    error,
+    pid_sum,
+    projected_power);
+  m_active_power = projected_power;
+  m_h_bridge->power(m_active_power);
 }
 
 void bldc_perseus::reset_time()

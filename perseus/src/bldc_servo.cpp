@@ -91,19 +91,22 @@ void bldc_perseus::update_pid_velocity(PID_settings settings)
 {
   m_reading_velocity_settings = settings;
 }
+
 void bldc_perseus::home_encoder(hal::u16 p_addr)
 {
   // elbow spins diff from track, shoulder
-  m_target.velocity = 5.0; 
+  m_target.velocity = -5.0; 
   if (p_addr == 0x123) {
-    m_target.velocity = -5.0; 
+    m_target.velocity = 5.0; 
   }
 
   // only spin track, shoulder, elbow 
-  // finish if statement to check for those three
-  update_velocity(true); 
-  while (m_homing_pin->level() == true) {
-    update_velocity(false); 
+  // bc unknown how to deal with wrist, end-effector
+  if (p_addr < 0x125) {
+    update_velocity(true); 
+    while (m_homing_pin->level() == true) {
+      update_velocity(false); 
+    }
   }
 }
 

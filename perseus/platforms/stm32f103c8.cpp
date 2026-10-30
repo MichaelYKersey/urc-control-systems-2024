@@ -86,16 +86,16 @@ hal::v5::strong_ptr<hal::serial> console()
   return console_ptr;
 }
 
-static hal::v5::optional_ptr<hal::output_pin> led_ptr;
-hal::v5::strong_ptr<hal::output_pin> status_led()
-{
-  if (not led_ptr) {
-    auto led = gpio_c().acquire_output_pin(13);
-    led_ptr = hal::v5::make_strong_ptr<decltype(led)>(driver_allocator(),
-                                                      std::move(led));
-  }
-  return led_ptr;
-}
+// static hal::v5::optional_ptr<hal::output_pin> led_ptr;
+// hal::v5::strong_ptr<hal::output_pin> status_led()
+// {
+//   if (not led_ptr) {
+//     auto led = gpio_c().acquire_output_pin(13);
+//     led_ptr = hal::v5::make_strong_ptr<decltype(led)>(driver_allocator(),
+//                                                       std::move(led));
+//   }
+//   return led_ptr;
+// }
 
 static hal::v5::optional_ptr<hal::output_pin> output_pin_0_ptr;
 hal::v5::strong_ptr<hal::output_pin> output_pin_0()
@@ -229,8 +229,8 @@ hal::v5::strong_ptr<hal::input_pin> homing_pin()
 {
   if (not homing_pin_ptr) {
     // CHECK IF ACTUALLY THE PIN
-    auto homing_pin = gpio_c().acquire_output_pin(13);
-    led_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(driver_allocator(),
+    auto homing_pin = gpio_c().acquire_input_pin(13);
+    homing_pin_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(driver_allocator(),
                                                       std::move(homing_pin));
   }
   return homing_pin_ptr;

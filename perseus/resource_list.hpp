@@ -75,7 +75,7 @@ std::pmr::polymorphic_allocator<> driver_allocator();
  */
 hal::v5::strong_ptr<hal::steady_clock> clock();
 hal::v5::strong_ptr<hal::serial> console();
-hal::v5::strong_ptr<hal::output_pin> status_led();
+// hal::v5::strong_ptr<hal::output_pin> status_led();
 // instantiate H-bridge instantiation
 hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge();
 hal::v5::strong_ptr<hal::rotation_sensor> encoder();

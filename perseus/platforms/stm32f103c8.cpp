@@ -86,7 +86,7 @@ hal::v5::strong_ptr<hal::serial> console()
   return console_ptr;
 }
 
-// static hal::v5::optional_ptr<hal::output_pin> led_ptr;
+static hal::v5::optional_ptr<hal::output_pin> led_ptr;
 // hal::v5::strong_ptr<hal::output_pin> status_led()
 // {
 //   if (not led_ptr) {
@@ -332,12 +332,12 @@ hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge()
 }
 
 static hal::v5::optional_ptr<sjsu::perseus::bldc_perseus> servo_ptr;
-hal::v5::strong_ptr<sjsu::perseus::bldc_perseus> servo()
+hal::v5::strong_ptr<sjsu::perseus::bldc_perseus> servo(hal::u16 p_addr)
 {
   if (not servo_ptr) {
     auto h_bridge = resources::h_bridge();
     auto encoder = resources::encoder();
-    auto servo = sjsu::perseus::bldc_perseus(h_bridge, encoder);
+    auto servo = sjsu::perseus::bldc_perseus(h_bridge, encoder, p_addr);
     servo_ptr = hal::v5::make_strong_ptr<decltype(servo)>(
       resources::driver_allocator(), std::move(servo));
   }
@@ -446,18 +446,18 @@ hal::v5::strong_ptr<sjsu::perseus::switches_bldc> switches()
   }
 
   // Otherwise, blink the led in a pattern
-  auto status_led = resources::status_led();
+  // auto status_led = resources::status_led();
   auto clock = resources::clock();
 
   while (true) {
     using namespace std::chrono_literals;
-    status_led->level(false);
+    led_ptr->level(false);
     hal::delay(*clock, 100ms);
-    status_led->level(true);
+    led_ptr->level(true);
     hal::delay(*clock, 100ms);
-    status_led->level(false);
+    led_ptr->level(false);
     hal::delay(*clock, 100ms);
-    status_led->level(true);
+    led_ptr->level(true);
     hal::delay(*clock, 1000ms);
   }
 }

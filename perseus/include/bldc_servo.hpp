@@ -17,7 +17,8 @@ class bldc_perseus
 
 public:
   bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder);
+                hal::v5::strong_ptr<hal::rotation_sensor> p_encoder, 
+                hal::u16 p_servo_addr);
 
   /**
    * @brief Struct keeps position and velocity status of the servo.
@@ -55,8 +56,10 @@ public:
   {
     // convert from ticks to degrees or mm
     float gear_ratio = 0.0;
-    // offset of starting angle from 0 (perpendicular to ground)
-    float angle_offset = 0.0;
+    // offset of homed angle from ground (where limit switch should hit)
+    float angle_offset_from_gravity = 0.0;
+    // offset from wake-up zero (so homed angle is zero)
+    float angle_offset_from_wake = 0.0; 
     // power needed to keep servo in place when link parallel to ground
     float fight_gravity = 0.0;
     // limits on power for safety
@@ -149,7 +152,7 @@ public:
    * @brief Remembers the current position of the encoder as the home position.
    * This should be called when the servo is homed.
    */
-  void home_encoder(hal::u16 p_addr);
+  void home_encoder();
 
   /**
     * @brief Update velocity to the target velocity using PID control and
@@ -235,16 +238,10 @@ public:
 
   void periodic_action(bool p_new_action);
 
-  /**
-   * @brief Set the angle offset of the servo.
-   * @param p_angle_offset The new angle offset (float).
-   */
-  void set_angle_offset(float p_angle_offset);
-  /**
-   * @brief Get the angle offset of the servo.
-   * @return The current angle offset (float).
-   */
-  float get_angle_offset();
+  void set_angle_offset_from_gravity(float angle_offset);
+  float get_angle_offset_from_gravity();
+  void set_angle_offset_from_wake(float angle_offset);
+  float get_angle_offset_from_wake();
 
   /**
    * @brief Set the previous joint's recorded position.
@@ -283,6 +280,7 @@ private:
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
   hal::v5::strong_ptr<hal::input_pin> m_homing_pin; 
+  hal::u16 m_servo_addr; 
   hal::u64 m_last_clock_check;
   status m_target;
   PID_settings m_reading_position_settings;

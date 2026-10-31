@@ -15,11 +15,13 @@ namespace sjsu::perseus {
 // ...existing code...
 bldc_perseus::bldc_perseus(
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder)
+  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder, 
+  hal::u16 p_servo_addr)
   : m_h_bridge(p_hbridge)
   , m_encoder(p_encoder)
   , m_clock(resources::clock())
-  , m_homing_pin(p_homing_pin) 
+  , m_homing_pin(resources::homing_pin()) 
+  , m_servo_addr(p_servo_addr)
 {
 }
 
@@ -94,22 +96,24 @@ void bldc_perseus::update_pid_velocity(PID_settings settings)
   m_reading_velocity_settings = settings;
 }
 
-void bldc_perseus::home_encoder(hal::u16 p_addr)
+void bldc_perseus::home_encoder()
 {
+  auto console =  resources::console(); 
+  float pow = -0.2f; 
   // elbow spins diff from track, shoulder
-  m_target.velocity = -5.0; 
-  if (p_addr == 0x123) {
-    m_target.velocity = 5.0; 
+  if (m_servo_addr == 0x123) {
+    pow = 0.001f; 
   }
 
   // only spin track, shoulder, elbow 
   // bc unknown how to deal with wrist, end-effector
-  if (p_addr < 0x125) {
-    update_velocity(true); 
+  if (m_servo_addr < 0x125) {
+    set_power(pow); 
     while (m_homing_pin->level() == true) {
-      update_velocity(false); 
     }
+    set_angle_offset_from_wake(read_angle() * -1); 
   }
+  set_power(0.0f); 
 }
 
 hal::degrees bldc_perseus::read_angle()
@@ -244,20 +248,31 @@ float bldc_perseus::get_prev_joint_position()
   return m_prev_joint_position;
 }
 
-void bldc_perseus::set_angle_offset(float angle_offset)
+void bldc_perseus::set_angle_offset_from_gravity(float angle_offset)
 {
-  m_physical_servo_values.angle_offset = angle_offset;
+  m_physical_servo_values.angle_offset_from_gravity = angle_offset;
 }
 
-float bldc_perseus::get_angle_offset()
+float bldc_perseus::get_angle_offset_from_gravity()
 {
-  return m_physical_servo_values.angle_offset;
+  return m_physical_servo_values.angle_offset_from_gravity;
+}
+
+void bldc_perseus::set_angle_offset_from_wake(float angle_offset)
+{
+  m_physical_servo_values.angle_offset_from_wake = angle_offset;
+}
+
+float bldc_perseus::get_angle_offset_from_wake()
+{
+  return m_physical_servo_values.angle_offset_from_wake;
 }
 
 float bldc_perseus::get_actual_position()
 {
-  return read_angle() + m_physical_servo_values.angle_offset +
-         m_prev_joint_position;
+  return read_angle() + m_physical_servo_values.angle_offset_from_gravity 
+        + m_physical_servo_values.angle_offset_from_wake 
+        + m_prev_joint_position;
 }
 
 void bldc_perseus::set_physical_servo_values(

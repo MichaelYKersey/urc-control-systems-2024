@@ -79,7 +79,7 @@ hal::v5::strong_ptr<hal::serial> console();
 // instantiate H-bridge instantiation
 hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge();
 hal::v5::strong_ptr<hal::rotation_sensor> encoder();
-hal::v5::strong_ptr<bldc_perseus> servo();
+hal::v5::strong_ptr<bldc_perseus> servo(hal::u16 p_addr);
 // homing pin
 hal::v5::strong_ptr<hal::input_pin> homing_pin(); 
 // switches instatiation

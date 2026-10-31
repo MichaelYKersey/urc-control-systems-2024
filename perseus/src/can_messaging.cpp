@@ -214,9 +214,9 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
     }
     case action::set_position_reading: {
       float reading_position = float_setter(current_action, p_message);
-      float new_angle_offset = p_bldc.get_actual_position() - reading_position +
-                               p_bldc.get_angle_offset();
-      p_bldc.set_angle_offset(new_angle_offset);
+
+      float new_angle_offset = p_bldc.get_actual_position() - reading_position;
+      p_bldc.set_angle_offset_from_wake(p_bldc.get_angle_offset_from_wake() - new_angle_offset);
       hal::print<64>(*console, "reading = %f\n", reading_position);
       p_bldc.set_active_action(
         static_cast<uint32_t>(action::set_position_reading));

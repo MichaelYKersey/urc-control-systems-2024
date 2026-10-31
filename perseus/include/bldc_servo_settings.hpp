@@ -6,7 +6,7 @@ using sec = float;
 namespace sjsu::perseus {
 
 // track
-constexpr bldc_perseus::PID_settings track_pid_settings = {
+constexpr bldc_perseus::pid_settings track_pid_settings = {
   .kp = 0.04,
   .ki = 0.00,
   .kd = 0.00,
@@ -21,7 +21,7 @@ constexpr bldc_perseus::physical_servo_values track_physical_servo_values = {
 };
 
 // shoulder
-constexpr bldc_perseus::PID_settings shoulder_pid_settings = {
+constexpr bldc_perseus::pid_settings shoulder_pid_settings = {
   .kp = 0.5,
   .ki = 0.00,
   .kd = 0.007,
@@ -36,7 +36,7 @@ constexpr bldc_perseus::physical_servo_values shoulder_physical_servo_values = {
 };
 
 // elbow
-constexpr bldc_perseus::PID_settings elbow_pid_settings = {
+constexpr bldc_perseus::pid_settings elbow_pid_settings = {
   .kp = 0.01,
   .ki = 0.00,
   .kd = 0.005,
@@ -51,7 +51,7 @@ constexpr bldc_perseus::physical_servo_values elbow_physical_servo_values = {
 };
 
 // wrist_left
-constexpr bldc_perseus::PID_settings wrist_left_pid_settings = {
+constexpr bldc_perseus::pid_settings wrist_left_pid_settings = {
   .kp = 0.005,
   .ki = 0.00,
   .kd = 0.00,
@@ -65,7 +65,7 @@ constexpr bldc_perseus::physical_servo_values
                                        .clockwise_positive = false };
 
 // wrist_right
-constexpr bldc_perseus::PID_settings wrist_right_pid_settings = {
+constexpr bldc_perseus::pid_settings wrist_right_pid_settings = {
   .kp = 0.005,
   .ki = 0.00,
   .kd = 0.00,
@@ -80,7 +80,7 @@ constexpr bldc_perseus::physical_servo_values
                                         .clockwise_positive = true };
 
 // end_effector
-constexpr bldc_perseus::PID_settings end_effector_pid_settings = {
+constexpr bldc_perseus::pid_settings end_effector_pid_settings = {
   .kp = 0.05,
   .ki = 0.00,
   .kd = 0.05,

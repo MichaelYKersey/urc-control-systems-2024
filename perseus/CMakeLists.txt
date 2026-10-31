@@ -20,6 +20,9 @@ libhal_build_demos(
   DEMOS
     application
     can_messaging_demo
+    h_bridge_demo
+    homing_switch_demo
+    pan_demo
     switches_demo
 
 

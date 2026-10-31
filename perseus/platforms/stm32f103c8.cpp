@@ -228,9 +228,9 @@ hal::v5::strong_ptr<hal::input_pin> homing_pin()
 {
   if (not homing_pin_ptr) {
     // CHECK IF ACTUALLY THE PIN
-    auto homing_pin = gpio_c().acquire_output_pin(13);
-    led_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(driver_allocator(),
-                                                      std::move(homing_pin));
+    auto homing_pin = gpio_b().acquire_input_pin(15);
+    homing_pin_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(
+      driver_allocator(), std::move(homing_pin));
   }
   return homing_pin_ptr;
 }
@@ -314,13 +314,9 @@ hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge()
     auto a_low = resources::pwm0_a8();
     auto b_low = resources::rx1_a3();
     // auto c_low = resources::tx1_a2();
-    hal::print(*console_ptr, "Acquired h-bridge low pins\n");
     auto a_high = resources::pwm_channel_0();
     auto b_high = resources::pwm_channel_1();
     // auto c_high = resources::pwm_channel_2();
-    hal::print(*console_ptr, "Acquired h-bridge high pins\n");
-    // auto h_bridge = sjsu::drivers::h_bridge({ a_high, a_low }, { b_high,
-    // b_low });
     auto h_bridge =
       sjsu::drivers::h_bridge({ .p_high = a_high, .p_low = a_low },
                               { .p_high = b_high, .p_low = b_low });
@@ -330,13 +326,16 @@ hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge()
   return h_bridge_ptr;
 }
 
-static hal::v5::optional_ptr<sjsu::perseus::bldc_perseus> servo_ptr;
+static hal::v5::optional_ptr<bldc_perseus> servo_ptr;
 hal::v5::strong_ptr<sjsu::perseus::bldc_perseus> servo()
 {
+  auto consle_ref = resources::console();
   if (not servo_ptr) {
     auto h_bridge = resources::h_bridge();
     auto encoder = resources::encoder();
-    auto servo = sjsu::perseus::bldc_perseus(h_bridge, encoder);
+    // auto homing_pin = resources::homing_pin();
+    auto clock_ref = resources::clock();
+    auto servo = bldc_perseus(h_bridge, encoder, clock_ref);
     servo_ptr = hal::v5::make_strong_ptr<decltype(servo)>(
       resources::driver_allocator(), std::move(servo));
   }

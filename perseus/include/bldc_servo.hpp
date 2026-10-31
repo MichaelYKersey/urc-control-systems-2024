@@ -1,4 +1,7 @@
 #pragma once
+#include <bldc_servo.hpp>
+#include <can_commands.hpp>
+#include <cmath>
 #include <libhal-arm-mcu/stm32_generic/quadrature_encoder.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/input_pin.hpp>
@@ -7,6 +10,7 @@
 #include <libhal/units.hpp>
 
 #include <h_bridge.hpp>
+#include <limits>
 
 using sec = float;
 
@@ -17,7 +21,10 @@ class bldc_perseus
 
 public:
   bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder);
+               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
+               hal::v5::strong_ptr<hal::steady_clock> p_clock
+               // hal::v5::optional_ptr<hal::input_pin> p_homing_pin);
+  );
 
   /**
    * @brief Struct keeps position and velocity status of the servo.
@@ -32,7 +39,7 @@ public:
   /**
    * @brief Struct keeps PID settings for the servo.
    */
-  struct PID_settings
+  struct pid_settings
   {
     float kp = 0.0;
     float ki = 0.0;
@@ -42,7 +49,7 @@ public:
    * @brief Struct keeps previous PID settings for the servo.
    * Obtained from update_velocity/position functions
    */
-  struct PID_prev_values
+  struct pid_prev_values
   {
     float integral = 0.0;
     float last_error = 0.0;
@@ -54,7 +61,7 @@ public:
   struct physical_servo_values
   {
     // convert from ticks to degrees or mm
-    float gear_ratio = 0.0;
+    float gear_ratio = 1;
     // offset of starting angle from 0 (perpendicular to ground)
     float angle_offset = 0.0;
     // power needed to keep servo in place when link parallel to ground
@@ -62,10 +69,12 @@ public:
     // limits on power for safety
     float high_clamped_value = 0.0;
     float low_clamped_value = 0.0;
-    // whether motor direction is flipped
-    // true: motor spins clockwise when positive power applied
-    // false: motor spins counter-clockwise when positive power applied
+    // motor spins clockwise when positive power applied
     bool clockwise_positive = false;
+    hal::degrees position_min = -std::numeric_limits<float>::infinity();
+    hal::degrees position_max = std::numeric_limits<float>::infinity();
+    hal::degrees homing_limitswitch_position = NAN;
+    float homing_power = 0.0f;
   };
   /**
    * @brief Set the target position of the servo.
@@ -137,19 +146,19 @@ public:
    * @brief Update the PID settings of the servo.
    * @param p_settings The PID settings to update.
    */
-  void update_pid_position(PID_settings p_settings);
+  void update_pid_position(pid_settings p_settings);
 
   /**
    * @brief Update the PID settings of the servo.
    * @param p_settings The PID settings to update.
    */
-  void update_pid_velocity(PID_settings p_settings);
+  void update_pid_velocity(pid_settings p_settings);
 
   /**
    * @brief Remembers the current position of the encoder as the home position.
    * This should be called when the servo is homed.
    */
-  void home_encoder(hal::u16 p_addr);
+  void home_encoder();
 
   /**
     * @brief Update velocity to the target velocity using PID control and
@@ -213,13 +222,13 @@ public:
    * @brief Set the servo's current action
    * @param p_action can_perseus::action value to be set
    */
-  void set_active_action(uint32_t p_action);
+  void set_active_action(action p_action);
 
   /**
    * @brief Get the servo's current action
    * @return Returns the current action as a can_perseus::action
    */
-  uint32_t get_active_action();
+  action get_active_action();
 
   /**
    * @brief Resets the internal time tracking for the servo, this will be done
@@ -231,7 +240,7 @@ public:
    * @brief Get the current PID settings of the servo.
    * @return The current PID settings of the servo.
    */
-  bldc_perseus::PID_settings get_pid_settings();
+  bldc_perseus::pid_settings get_pid_settings();
 
   void periodic_action(bool p_new_action);
 
@@ -282,17 +291,17 @@ private:
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> m_h_bridge;
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
-  hal::v5::strong_ptr<hal::input_pin> m_homing_pin; 
+  // hal::v5::strong_ptr<hal::input_pin> m_homing_pin;
   hal::u64 m_last_clock_check;
   status m_target;
-  PID_settings m_reading_position_settings;
-  PID_settings m_reading_velocity_settings;
-  PID_prev_values m_PID_prev_velocity_values;
-  PID_prev_values m_PID_prev_position_values;
+  pid_settings m_reading_position_settings;
+  pid_settings m_reading_velocity_settings;
+  pid_prev_values m_pid_prev_velocity_values;
+  pid_prev_values m_pid_prev_position_values;
   physical_servo_values m_physical_servo_values;
   float m_prev_joint_position;
   float m_active_power;
-  uint32_t m_active_action;
+  action m_active_action;
 };
 
 }  // namespace sjsu::perseus

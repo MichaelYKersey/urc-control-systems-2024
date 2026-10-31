@@ -20,8 +20,16 @@
 
 int main()
 {
-  sjsu::perseus::initialize_platform();
-  sjsu::perseus::application();
+  auto console_ref = sjsu::perseus::resources::console();
+  try {
+    print(*console_ref, "App Start\n");
+    sjsu::perseus::application();
+  } catch (hal::exception e) {
+    print<64>(*console_ref, "App Failed, error code: %d\n", e.error_code());
+    // kill power to motor on error
+    auto h_bridge = sjsu::perseus::resources::h_bridge();
+    h_bridge->power(0);
+  }
   std::terminate();
 }
 // libhal-arm-mcu specific APIs defined to reduce code size

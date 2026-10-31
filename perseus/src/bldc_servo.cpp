@@ -1,7 +1,10 @@
 #include <bldc_servo.hpp>
+#include <can_commands.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
+#include <libhal/pointers.hpp>
+#include <libhal/steady_clock.hpp>
 #include <libhal/units.hpp>
 #include <sys/types.h>
 
@@ -12,14 +15,15 @@ using namespace std::chrono_literals;
 
 namespace sjsu::perseus {
 
-// ...existing code...
 bldc_perseus::bldc_perseus(
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder)
+  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
+  hal::v5::strong_ptr<hal::steady_clock> p_clock)
+  // hal::v5::optional_ptr<hal::input_pin> p_homing_pin)
   : m_h_bridge(p_hbridge)
   , m_encoder(p_encoder)
-  , m_clock(resources::clock())
-  , m_homing_pin(p_homing_pin)
+  , m_clock(p_clock)
+// , m_homing_pin(p_homing_pin)
 {
 }
 
@@ -65,12 +69,12 @@ void bldc_perseus::set_power(float power)
   m_h_bridge->power(m_active_power);
 }
 
-void bldc_perseus::set_active_action(uint32_t action)
+void bldc_perseus::set_active_action(action action)
 {
   m_active_action = action;
 }
 
-uint32_t bldc_perseus::get_active_action()
+action bldc_perseus::get_active_action()
 {
   return m_active_action;
 }
@@ -81,35 +85,28 @@ void bldc_perseus::stop()
   m_h_bridge->power(0.0f);
 }
 
-bldc_perseus::PID_settings bldc_perseus::get_pid_settings()
+bldc_perseus::pid_settings bldc_perseus::get_pid_settings()
 {
   return m_reading_position_settings;
 }
-void bldc_perseus::update_pid_position(PID_settings settings)
+void bldc_perseus::update_pid_position(pid_settings settings)
 {
   m_reading_position_settings = settings;
 }
-void bldc_perseus::update_pid_velocity(PID_settings settings)
+void bldc_perseus::update_pid_velocity(pid_settings settings)
 {
   m_reading_velocity_settings = settings;
 }
 
-void bldc_perseus::home_encoder(hal::u16 p_addr)
+void bldc_perseus::home_encoder()
 {
-  // elbow spins diff from track, shoulder
-  m_target.velocity = -5.0;
-  if (p_addr == 0x123) {
-    m_target.velocity = 5.0;
-  }
-
-  // only spin track, shoulder, elbow
-  // bc unknown how to deal with wrist, end-effector
-  if (p_addr < 0x125) {
-    update_velocity(true);
-    while (m_homing_pin->level() == true) {
-      update_velocity(false);
-    }
-  }
+  // high is when the pin is not pressed and it is low when pressed
+  // if (m_homing_pin->level()) {
+  //   set_power(m_physical_servo_values.homing_power);
+  // } else {
+  //   stop();
+  //   set_active_action(action::set_power);
+  // }
 }
 
 hal::degrees bldc_perseus::read_angle()
@@ -124,10 +121,10 @@ void bldc_perseus::update_velocity([[maybe_unused]] bool from_scratch)
 
 void bldc_perseus::reset_time()
 {
-  m_PID_prev_velocity_values = { .integral = 0,
+  m_pid_prev_velocity_values = { .integral = 0,
                                  .last_error = 0,
                                  .prev_timestamp = 0.0 };
-  m_PID_prev_position_values = { .integral = 0,
+  m_pid_prev_position_values = { .integral = 0,
                                  .last_error = 0,
                                  .prev_timestamp = 0.0 };
   m_last_clock_check = m_clock->uptime();
@@ -150,32 +147,26 @@ float bldc_perseus::get_neg_clamped_power()
   return m_physical_servo_values.low_clamped_value;
 }
 
-hal::time_duration bldc_perseus::get_clock_time(hal::steady_clock& p_clock)
-{
-  hal::time_duration const period =
-    drivers::time_util::sec_to_hal_time_duration(1.0f / p_clock.frequency());
-  return period * p_clock.uptime();
-}
 // position
 void bldc_perseus::update_position(bool from_scratch)
 {
   auto console = resources::console();
   // pid portion
   float error = m_target.position - get_actual_position();
-  sec curr_time =
-    drivers::time_util::hal_time_duration_to_sec(get_clock_time(*m_clock));
-  sec dt = curr_time - m_PID_prev_position_values.prev_timestamp;
+  sec curr_time = drivers::time_util::hal_time_duration_to_sec(
+    sjsu::drivers::time_util::get_clock_time(*m_clock));
+  sec dt = curr_time - m_pid_prev_position_values.prev_timestamp;
   if (from_scratch) {
-    m_PID_prev_position_values.integral = 0.0f;
+    m_pid_prev_position_values.integral = 0.0f;
   }
-  m_PID_prev_position_values.integral += error * dt;
-  float derivative = (error - m_PID_prev_position_values.last_error) / dt;
+  m_pid_prev_position_values.integral += error * dt;
+  float derivative = (error - m_pid_prev_position_values.last_error) / dt;
   float p_term = m_reading_position_settings.kp * error;
   float i_term =
-    m_reading_position_settings.ki * m_PID_prev_position_values.integral;
+    m_reading_position_settings.ki * m_pid_prev_position_values.integral;
   float d_term = m_reading_position_settings.kd * derivative;
-  m_PID_prev_position_values.last_error = error;
-  m_PID_prev_position_values.prev_timestamp = curr_time;
+  m_pid_prev_position_values.last_error = error;
+  m_pid_prev_position_values.prev_timestamp = curr_time;
   float pid_sum = p_term + i_term + d_term;
   // feed forward
   float feedforward = bldc_perseus::position_feedforward();
@@ -243,12 +234,12 @@ bldc_perseus::physical_servo_values bldc_perseus::get_physical_servo_values()
 
 void bldc_perseus::periodic_action(bool new_action)
 {
-  switch (static_cast<can_perseus::action>(m_active_action)) {
-    case can_perseus::action::homing: {
+  switch (m_active_action) {
+    case action::homing: {
       home_encoder();
       break;
     }
-    case can_perseus::action::set_position_target: {
+    case action::set_position_target: {
       update_position(new_action);
       break;
     }

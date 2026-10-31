@@ -14,7 +14,7 @@ void application()
   auto console = resources::console();
 
   bldc_perseus::physical_servo_values physical_servo_values = {
-    .gear_ratio = 188.0f / 1.0f,
+    .gear_ratio = 188.0f / 1.0f * 28.0f,
     .angle_offset = 0.0,
     .fight_gravity = 0.0,
     .high_clamped_value = 0.5,
@@ -35,7 +35,6 @@ void application()
 
   uint64_t deadline;
   while (true) {
-    // servo_ptr->set_power(0.3);
     hal::print(*console, "pos 0\n");
     servo_ptr->set_target_position(0);
     servo_ptr->periodic_action(true);
@@ -44,7 +43,6 @@ void application()
       servo_ptr->periodic_action(false);
     }
 
-    // servo_ptr->set_power(-0.3);
     hal::print(*console, "pos 360\n");
     servo_ptr->set_target_position(360);
     servo_ptr->periodic_action(true);

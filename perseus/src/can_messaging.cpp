@@ -77,9 +77,11 @@ float can_perseus::float_setter(action p_act, hal::can_message const& p_message)
   if (p_act == action::set_power) {
     std::array<hal::byte, 2> to_set_array = { p_message.payload[2],
                                               p_message.payload[3] };
-    set_value = static_cast<float>(can_util::byte_array_to_int16_big_endian(to_set_array)) / 100; 
+    set_value = static_cast<float>(
+                  can_util::byte_array_to_int16_big_endian(to_set_array)) /
+                100;
     if (p_message.payload[1] == 0xFF) {
-      set_value *= -1; 
+      set_value *= -1;
     }
   } else {
     std::array<hal::byte, 4> to_set_array = { p_message.payload[2],

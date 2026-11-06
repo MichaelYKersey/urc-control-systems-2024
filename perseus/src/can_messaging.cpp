@@ -77,9 +77,10 @@ float can_perseus::float_setter(action p_act, hal::can_message const& p_message)
   if (p_act == action::set_power) {
     std::array<hal::byte, 2> to_set_array = { p_message.payload[2],
                                               p_message.payload[3] };
-    hal::i16 number = can_util::byte_array_to_int16_big_endian(to_set_array);
-    set_value = can_util::fixed_to_floating_point_16(
-      number, static_cast<hal::i16>(p_message.payload[1]));
+    set_value = static_cast<float>(can_util::byte_array_to_int16_big_endian(to_set_array)) / 100; 
+    if (p_message.payload[1] == 0xFF) {
+      set_value *= -1; 
+    }
   } else {
     std::array<hal::byte, 4> to_set_array = { p_message.payload[2],
                                               p_message.payload[3],
@@ -117,11 +118,10 @@ hal::can_message can_perseus::float_getter(action p_act,
                                            hal::i16 p_exponent)
 {
   if (p_act == action::read_power) {
-    hal::i16 fixed_pt =
-      can_util::floating_to_fixed_point_16(p_read_value, p_exponent);
+    hal::i16 fixed_pt = p_read_value * 100;
     hal::byte dir = 0x00;
     if (fixed_pt < 0) {
-      dir = static_cast<hal::byte>(-1);
+      dir = 0xFF;
     } else {
       dir = 0x01;
     }
@@ -273,7 +273,7 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
     }
     case action::read_power: {
       float read_value = p_bldc.get_power();
-      response = float_getter(current_action, read_value, 14);
+      response = float_getter(current_action, read_value, 0);
       break;
     }
     case action::read_pid_position_config: {

@@ -1,3 +1,4 @@
+#include "bldc_servo.hpp"
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -26,7 +27,9 @@ void application()
 
   // variables used to initialize bldc_perseus
   bldc_perseus::PID_settings pid_settings_position;
-  bldc_perseus::PID_settings pid_settings_velocity = {.kp=0.0001, .ki=0.000, .kd=0.01};
+  bldc_perseus::PID_settings pid_settings_velocity = { .kp = 0.0001,
+                                                       .ki = 0.000,
+                                                       .kd = 0.01 };
   bldc_perseus::physical_servo_values physical_servo_values;
   // variables used to initialize can_perseus
   can_perseus::servo_address allowed_id;
@@ -70,11 +73,12 @@ void application()
   }
 
   // create bldc_perseus
-  auto servo_ptr = resources::servo(allowed_id);
-  servo_ptr->update_pid_position(pid_settings_position);
-  servo_ptr->update_pid_velocity(pid_settings_velocity);
-  servo_ptr->set_physical_servo_values(physical_servo_values);
-  servo_ptr->get_actual_position();
+  auto bldc =
+    bldc_perseus(resources::h_bridge(), resources::encoder(), allowed_id);
+  bldc.update_pid_position(pid_settings_position);
+  bldc.update_pid_velocity(pid_settings_velocity);
+  bldc.set_physical_servo_values(physical_servo_values);
+  bldc.get_actual_position();
   hal::print(*console, "pre-can\n");
 
   // create can_perseus
@@ -105,12 +109,12 @@ void application()
     // react to message
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
-      servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Action: %x \n", servo_ptr->get_active_action());
+      servo_can.process_can_message(*msg, bldc);
+      hal::print<64>(*console, "Action: %x \n", bldc.get_active_action());
       new_action = true;
     }
 
-    servo_ptr->periodic_action(new_action);
+    bldc.periodic_action(new_action);
     new_action = false;
 
     // check group message message
@@ -119,8 +123,8 @@ void application()
     // react to message
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
-      servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Action: %x \n", servo_ptr->get_active_action());
+      servo_can.process_can_message(*msg, bldc);
+      hal::print<64>(*console, "Action: %x \n", bldc.get_active_action());
       new_action = true;
     }
   }

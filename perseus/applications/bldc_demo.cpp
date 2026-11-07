@@ -23,7 +23,9 @@ void application()
 
   // variables used to initialize bldc_perseus
   bldc_perseus::PID_settings pid_settings_position;
-  bldc_perseus::PID_settings pid_settings_velocity = {.kp=0.0001, .ki=0.000, .kd=0.01};
+  bldc_perseus::PID_settings pid_settings_velocity = { .kp = 0.0001,
+                                                       .ki = 0.000,
+                                                       .kd = 0.01 };
   bldc_perseus::physical_servo_values physical_servo_values;
   // variables used to initialize can_perseus
   auto switches_ptr = resources::switches();
@@ -60,17 +62,16 @@ void application()
   }
 
   // create bldc_perseus
-  auto servo_ptr = resources::servo(allowed_id);
-  servo_ptr->update_pid_position(pid_settings_position);
-  servo_ptr->update_pid_velocity(pid_settings_velocity);
-  servo_ptr->set_physical_servo_values(physical_servo_values);
-  servo_ptr->get_actual_position();
-  
+  auto bldc =
+    bldc_perseus(resources::h_bridge(), resources::encoder(), allowed_id);
+  bldc.update_pid_position(pid_settings_position);
+  bldc.update_pid_velocity(pid_settings_velocity);
+  bldc.set_physical_servo_values(physical_servo_values);
+  bldc.get_actual_position();
+
   hal::print(*console, "Begin.\n");
 
-
-  servo_ptr->home_encoder(); 
-  hal::print<64>(*console, "%f", servo_ptr->get_actual_position());    
-
+  bldc.home_encoder();
+  hal::print<64>(*console, "%f", bldc.get_actual_position());
 }
 }  // namespace sjsu::perseus

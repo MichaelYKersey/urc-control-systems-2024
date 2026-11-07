@@ -1,4 +1,3 @@
-#include "bldc_servo.hpp"
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
@@ -15,12 +14,12 @@ namespace sjsu::perseus {
 // ...existing code...
 bldc_perseus::bldc_perseus(
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder, 
+  hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
   hal::u16 p_servo_addr)
   : m_h_bridge(p_hbridge)
   , m_encoder(p_encoder)
   , m_clock(resources::clock())
-  , m_homing_pin(resources::homing_pin()) 
+  , m_homing_pin(resources::homing_pin())
   , m_servo_addr(p_servo_addr)
 {
 }
@@ -98,22 +97,22 @@ void bldc_perseus::update_pid_velocity(PID_settings settings)
 
 void bldc_perseus::home_encoder()
 {
-  auto console =  resources::console(); 
-  float pow = -0.2f; 
+  auto console = resources::console();
+  float pow = -0.2f;
   // elbow spins diff from track, shoulder
   if (m_servo_addr == 0x123) {
-    pow = 0.001f; 
+    pow = 0.001f;
   }
 
-  // only spin track, shoulder, elbow 
+  // only spin track, shoulder, elbow
   // bc unknown how to deal with wrist, end-effector
   if (m_servo_addr < 0x125) {
-    set_power(pow); 
+    set_power(pow);
     while (m_homing_pin->level() == true) {
     }
-    set_angle_offset_from_wake(read_angle() * -1); 
+    set_angle_offset_from_wake(read_angle() * -1);
   }
-  set_power(0.0f); 
+  set_power(0.0f);
 }
 
 hal::degrees bldc_perseus::read_angle()
@@ -141,9 +140,10 @@ void bldc_perseus::update_velocity(bool from_scratch)
   m_PID_prev_velocity_values.last_error = error;
   m_PID_prev_velocity_values.prev_timestamp = curr_time;
   float pid_sum = p_term + i_term + d_term;
-  float projected_power = std::clamp(pid_sum,
-                               m_physical_servo_values.low_clamped_value,
-                               m_physical_servo_values.high_clamped_value);
+  float projected_power =
+    std::clamp(pid_sum,
+               m_physical_servo_values.low_clamped_value,
+               m_physical_servo_values.high_clamped_value);
   hal::print<128>(
     *console,
     "Target: %f, Velocity: %f, Error: %f, pid: %f, projected: %f\n",
@@ -270,9 +270,8 @@ float bldc_perseus::get_angle_offset_from_wake()
 
 float bldc_perseus::get_actual_position()
 {
-  return read_angle() + m_physical_servo_values.angle_offset_from_gravity 
-        + m_physical_servo_values.angle_offset_from_wake 
-        + m_prev_joint_position;
+  return read_angle() + m_physical_servo_values.angle_offset_from_gravity +
+         m_physical_servo_values.angle_offset_from_wake + m_prev_joint_position;
 }
 
 void bldc_perseus::set_physical_servo_values(

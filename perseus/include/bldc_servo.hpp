@@ -17,8 +17,10 @@ class bldc_perseus
 
 public:
   bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-                hal::v5::strong_ptr<hal::rotation_sensor> p_encoder, 
-                hal::u16 p_servo_addr);
+               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
+               hal::u16 p_servo_addr
+               // , sjsu::perseus::bldc_perseus::physical_servo_values
+  );
 
   /**
    * @brief Struct keeps position and velocity status of the servo.
@@ -59,7 +61,7 @@ public:
     // offset of homed angle from ground (where limit switch should hit)
     float angle_offset_from_gravity = 0.0;
     // offset from wake-up zero (so homed angle is zero)
-    float angle_offset_from_wake = 0.0; 
+    float angle_offset_from_wake = 0.0;
     // power needed to keep servo in place when link parallel to ground
     float fight_gravity = 0.0;
     // limits on power for safety
@@ -279,8 +281,8 @@ private:
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> m_h_bridge;
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
-  hal::v5::strong_ptr<hal::input_pin> m_homing_pin; 
-  hal::u16 m_servo_addr; 
+  hal::v5::strong_ptr<hal::input_pin> m_homing_pin;
+  hal::u16 m_servo_addr;
   hal::u64 m_last_clock_check;
   status m_target;
   PID_settings m_reading_position_settings;

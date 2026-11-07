@@ -29,26 +29,23 @@ void application()
   auto servo_ptr = resources::servo();
   servo_ptr->update_pid_position(pid_settings);
   servo_ptr->set_physical_servo_values(physical_servo_values);
-  servo_ptr->set_active_action(action::set_position_target);
 
   hal::print(*console, "start loop\n");
 
   uint64_t deadline;
   while (true) {
     hal::print(*console, "pos 0\n");
-    servo_ptr->set_target_position(0);
-    servo_ptr->periodic_action(true);
+    servo_ptr->start_position_pid(0);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {
-      servo_ptr->periodic_action(false);
+      servo_ptr->position_pid_periodic();
     }
 
     hal::print(*console, "pos 360\n");
-    servo_ptr->set_target_position(360);
-    servo_ptr->periodic_action(true);
+    servo_ptr->start_position_pid(360);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {
-      servo_ptr->periodic_action(false);
+      servo_ptr->position_pid_periodic();
     }
   }
 }

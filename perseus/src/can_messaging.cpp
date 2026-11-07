@@ -184,19 +184,16 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
       break;
     }
     case action::heartbeat: {
-      p_bldc.set_active_action(action::heartbeat);
       break;
     }
     case action::homing: {
-      p_bldc.set_active_action(action::homing);
       break;
     }
     // setters
     case action::set_position_target: {
       float target_position = float_setter(current_action, p_message);
-      p_bldc.set_target_position(target_position);
+      p_bldc.start_position_pid(target_position);
       hal::print<64>(*console, "Target = %f\n", target_position);
-      p_bldc.set_active_action(action::set_position_target);
       // get previous joint's target position
       if (m_prev_servo_addr != 0) {
         auto request = hal::can_message{
@@ -217,32 +214,27 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
                                p_bldc.get_angle_offset();
       p_bldc.set_angle_offset(new_angle_offset);
       hal::print<64>(*console, "reading = %f\n", reading_position);
-      p_bldc.set_active_action(action::set_position_reading);
       break;
     }
     case action::set_velocity_target: {
       float target_velocity = float_setter(current_action, p_message);
-      p_bldc.set_target_position(target_velocity);
+      p_bldc.start_velocity_pid(target_velocity);
       hal::print<64>(*console, "Target = %f\n", target_velocity);
-      p_bldc.set_active_action(action::set_velocity_target);
       break;
     }
     case action::set_power: {
       float power = float_setter(current_action, p_message);
       p_bldc.set_power(power);
-      p_bldc.set_active_action(action::set_power);
       break;
     }
     case action::set_pid_position_config: {
       bldc_perseus::pid_settings settings = pid_settings_setter(p_message);
       p_bldc.update_pid_position(settings);
-      p_bldc.set_active_action(action::set_pid_position_config);
       break;
     }
     case action::set_pid_velocity_config: {
       bldc_perseus::pid_settings settings = pid_settings_setter(p_message);
       p_bldc.update_pid_position(settings);
-      p_bldc.set_active_action(action::set_pid_velocity_config);
       break;
     }
     // readers
@@ -272,12 +264,12 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
       break;
     }
     case action::read_pid_position_config: {
-      bldc_perseus::pid_settings settings = p_bldc.get_pid_settings();
+      bldc_perseus::pid_settings settings = p_bldc.get_position_pid_settings();
       response = pid_settings_getter(current_action, settings);
       break;
     }
     case action::read_pid_velocity_config: {
-      bldc_perseus::pid_settings settings = p_bldc.get_pid_settings();
+      bldc_perseus::pid_settings settings = p_bldc.get_position_pid_settings();
       response = pid_settings_getter(current_action, settings);
       break;
     }

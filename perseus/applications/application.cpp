@@ -92,7 +92,6 @@ void application()
   hal::print(*console, "Begin.\n");
 
   // start loop
-  bool new_action = false;
 
   while (true) {
 
@@ -104,12 +103,10 @@ void application()
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
       servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Action: %x \n", servo_ptr->get_active_action());
-      new_action = true;
+      hal::print<64>(*console, "Mode: %x \n", servo_ptr->get_active_mode());
     }
 
-    servo_ptr->periodic_action(new_action);
-    new_action = false;
+    servo_ptr->periodic();
 
     // check group message message
     msg = servo_can.check_for_group_message();
@@ -118,8 +115,7 @@ void application()
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
       servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Action: %x \n", servo_ptr->get_active_action());
-      new_action = true;
+      hal::print<64>(*console, "Mode: %x \n", servo_ptr->get_active_mode());
     }
   }
 }

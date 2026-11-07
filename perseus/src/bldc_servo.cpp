@@ -27,9 +27,13 @@ bldc_perseus::bldc_perseus(
 {
 }
 
-void bldc_perseus::set_target_position(float target_position)
+void bldc_perseus::start_position_pid(hal::degrees p_target_position)
 {
-  m_target.position = target_position;
+  m_active_mode = mode::position;
+  m_target.position = p_target_position;
+  m_pid_prev_position_values.last_error = 0;
+  m_pid_prev_position_values.integral = 0;
+  m_pid_prev_position_values.prev_timestamp = m_clock->uptime();
 }
 
 float bldc_perseus::get_target_position()
@@ -37,9 +41,13 @@ float bldc_perseus::get_target_position()
   return m_target.position;
 }
 
-void bldc_perseus::set_target_velocity(float target_velocity)
+void bldc_perseus::start_velocity_pid(float p_target_velocity)
 {
-  m_target.velocity = target_velocity;
+  m_active_mode = mode::velocity;
+  m_target.velocity = p_target_velocity;
+  m_pid_prev_velocity_values.last_error = 0;
+  m_pid_prev_velocity_values.integral = 0;
+  m_pid_prev_velocity_values.prev_timestamp = m_clock->uptime();
 }
 
 float bldc_perseus::get_target_velocity()
@@ -63,32 +71,22 @@ float bldc_perseus::get_power()
   return m_active_power;
 }
 
-void bldc_perseus::set_power(float power)
+void bldc_perseus::set_h_bridge_power(float p_power)
 {
-  m_active_power = power;
+  m_active_power = p_power;
   m_h_bridge->power(m_active_power);
 }
-
-void bldc_perseus::set_active_action(action action)
+void bldc_perseus::set_power(float p_power)
 {
-  m_active_action = action;
-}
-
-action bldc_perseus::get_active_action()
-{
-  return m_active_action;
+  m_active_mode = mode::power;
+  set_h_bridge_power(p_power);
 }
 
 void bldc_perseus::stop()
 {
-  m_active_power = 0;
-  m_h_bridge->power(0.0f);
+  set_power(0.0f);
 }
 
-bldc_perseus::pid_settings bldc_perseus::get_pid_settings()
-{
-  return m_reading_position_settings;
-}
 void bldc_perseus::update_pid_position(pid_settings settings)
 {
   m_reading_position_settings = settings;
@@ -98,7 +96,7 @@ void bldc_perseus::update_pid_velocity(pid_settings settings)
   m_reading_velocity_settings = settings;
 }
 
-void bldc_perseus::home_encoder()
+void bldc_perseus::home_encoder_periodic()
 {
   // high is when the pin is not pressed and it is low when pressed
   // if (m_homing_pin->level()) {
@@ -114,41 +112,13 @@ hal::degrees bldc_perseus::read_angle()
   return (m_encoder->read().angle / m_physical_servo_values.gear_ratio);
 }
 
-void bldc_perseus::update_velocity([[maybe_unused]] bool from_scratch)
+void bldc_perseus::velocity_pid_periodic()
 {
   throw hal::operation_not_supported(this);
 }
 
-void bldc_perseus::reset_time()
-{
-  m_pid_prev_velocity_values = { .integral = 0,
-                                 .last_error = 0,
-                                 .prev_timestamp = 0.0 };
-  m_pid_prev_position_values = { .integral = 0,
-                                 .last_error = 0,
-                                 .prev_timestamp = 0.0 };
-  m_last_clock_check = m_clock->uptime();
-}
-
-void bldc_perseus::set_pos_clamped_power(float power)
-{
-  m_physical_servo_values.high_clamped_value = power;
-}
-float bldc_perseus::get_pos_clamped_power()
-{
-  return m_physical_servo_values.high_clamped_value;
-}
-void bldc_perseus::set_neg_clamped_power(float power)
-{
-  m_physical_servo_values.low_clamped_value = power;
-}
-float bldc_perseus::get_neg_clamped_power()
-{
-  return m_physical_servo_values.low_clamped_value;
-}
-
 // position
-void bldc_perseus::update_position(bool from_scratch)
+void bldc_perseus::position_pid_periodic()
 {
   auto console = resources::console();
   // pid portion
@@ -156,9 +126,6 @@ void bldc_perseus::update_position(bool from_scratch)
   sec curr_time = drivers::time_util::hal_time_duration_to_sec(
     sjsu::drivers::time_util::get_clock_time(*m_clock));
   sec dt = curr_time - m_pid_prev_position_values.prev_timestamp;
-  if (from_scratch) {
-    m_pid_prev_position_values.integral = 0.0f;
-  }
   m_pid_prev_position_values.integral += error * dt;
   float derivative = (error - m_pid_prev_position_values.last_error) / dt;
   float p_term = m_reading_position_settings.kp * error;
@@ -232,20 +199,37 @@ bldc_perseus::physical_servo_values bldc_perseus::get_physical_servo_values()
   return m_physical_servo_values;
 }
 
-void bldc_perseus::periodic_action(bool new_action)
+void bldc_perseus::periodic()
 {
-  switch (m_active_action) {
-    case action::homing: {
-      home_encoder();
+  switch (m_active_mode) {
+    case mode::homing: {
+      home_encoder_periodic();
       break;
     }
-    case action::set_position_target: {
-      update_position(new_action);
+    case mode::position: {
+      position_pid_periodic();
+      break;
+    }
+    case mode::velocity: {
+      velocity_pid_periodic();
       break;
     }
     default:
       break;
   }
+}
+bldc_perseus::mode bldc_perseus::get_active_mode()
+{
+  return m_active_mode;
+}
+
+bldc_perseus::pid_settings bldc_perseus::get_position_pid_settings()
+{
+  return m_reading_position_settings;
+}
+bldc_perseus::pid_settings bldc_perseus::get_pid_velocity_settings()
+{
+  return m_reading_velocity_settings;
 }
 
 }  // namespace sjsu::perseus

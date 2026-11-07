@@ -20,12 +20,13 @@ class bldc_perseus
 {
 
 public:
-  bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
-               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
-               hal::v5::strong_ptr<hal::steady_clock> p_clock
-               // hal::v5::optional_ptr<hal::input_pin> p_homing_pin);
-  );
-
+  enum class mode
+  {
+    power,
+    homing,
+    velocity,
+    position,
+  };
   /**
    * @brief Struct keeps position and velocity status of the servo.
    */
@@ -76,58 +77,34 @@ public:
     hal::degrees homing_limitswitch_position = NAN;
     float homing_power = 0.0f;
   };
-  /**
-   * @brief Set the target position of the servo.
-   * @param p_target_position The target position to set, it is float value in
-   * degrees.
-   */
-  void set_target_position(hal::degrees p_target_position);
-  /**
-   * @brief Get the target position of the servo.
-   * @return Gets the position relative to the home position.
-   */
-  hal::degrees get_target_position();
-  /**
-   * @brief Get the current position of the servo.
-   * @return Gets the position relative to the home position.
-   */
-  hal::degrees get_reading_position();
+
+  bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
+               hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
+               hal::v5::strong_ptr<hal::steady_clock> p_clock
+               // hal::v5::optional_ptr<hal::input_pin> p_homing_pin);
+  );
 
   /**
-   * @brief Set the current position of the servo.
-   * It will not immediately go to the target position, but will try to reach it
-   * using velocity control.
-   * @param p_reading_position The current position to set, it is a hal::degrees
-   * value. This is relative to the home position.
+   * @brief Set servo values
+   * @param p_physical_servo_values physical servo values
+   * struct)
    */
-  void set_reading_position(hal::degrees p_reading_position);
-
+  void set_physical_servo_values(physical_servo_values p_physical_servo_values);
   /**
-   * @brief Set the target velocity of the servo.
-   * The servo will try to reach this velocity using acceleration limits.
-   * This may change the clamped speed.
-   * @param p_target_velocity The target velocity to set, it is a float value.
+   * @brief Get servo values object
    */
-  void set_target_velocity(float p_target_velocity);
-
-  /**
-   * @brief Set the current velocity of the servo.
-   *  This should only be used to set the velocity to 0.
-   * @param p_reading_velocity The current velocity to set, it is a float value.
-   */
-  void set_reading_velocity(float p_reading_velocity);
-
-  /**
-   * @brief TURNS OFF (Power = 0)
-   */
-  void stop();
+  physical_servo_values get_physical_servo_values();
 
   /**
    * @brief Returns the visible angle (ticks adjusted by gear ratio).
    * @return Angle in hal::degrees
    */
   hal::degrees read_angle();
-
+  /**
+   * @brief Get the current position of the servo.
+   * @return Gets the position relative to the home position.
+   */
+  hal::degrees get_reading_position();
   /**
    * @brief Get the current velocity of the servo.
    * @return The current velocity of the servo as a float value representing
@@ -136,45 +113,61 @@ public:
   float get_reading_velocity();
 
   /**
-   * @brief Get the target velocity of the servo.
-   * @return The target velocity of the servo as a float value representing
-   * degrees per second.
+   * @brief Get the servo's current action
+   * @return Returns the current action as a can_perseus::action
    */
-  float get_target_velocity();
+  mode get_active_mode();
+
+  void periodic();
+
+  /**
+   * @brief Sets the power directly to h_bridge (bypass modes)
+   * @param p_power The power to set the motor to, as a float between -1.0
+   * and 1.0 where -1 is the maximum in one direction and 1 is the maximum in
+   * the other direction.
+   */
+  void set_h_bridge_power(float p_power);
+  /**
+   * @brief Sets the power and sets mode to power
+   * @param p_power The power to set the motor to, as a float between -1.0
+   * and 1.0 where -1 is the maximum in one direction and 1 is the maximum in
+   * the other direction.
+   */
+  void set_power(float p_power);
+  /**
+   * @brief Get the power the servo is using.
+   * @return The power as a float between -1.0 and 1.0, representing 0% to 100%
+   * of maximum possible power.
+   */
+  float get_power();
 
   /**
    * @brief Update the PID settings of the servo.
    * @param p_settings The PID settings to update.
    */
   void update_pid_position(pid_settings p_settings);
-
   /**
-   * @brief Update the PID settings of the servo.
-   * @param p_settings The PID settings to update.
+   * @brief Update the velocity PID settings
+   * @return the settings for position PID.
    */
-  void update_pid_velocity(pid_settings p_settings);
-
+  pid_settings get_position_pid_settings();
   /**
-   * @brief Remembers the current position of the encoder as the home position.
-   * This should be called when the servo is homed.
+   * @brief Set the target position of the servo.
+   * @param p_target_position The target position to set, it is float value in
+   * degrees.
    */
-  void home_encoder();
-
+  void start_position_pid(hal::degrees p_target_position);
   /**
-    * @brief Update velocity to the target velocity using PID control and
-    feedforward.
-      @param p_from_scratch A bool indicator of if the target being moved to is
-    new (1) or not (0). If the target is new, reset integral value to 0.
-
-  */
-  void update_velocity(bool p_from_scratch);
+   * @brief Get the target position of the servo.
+   * @return Gets the position relative to the home position.
+   */
+  hal::degrees get_target_position();
   /**
-    * @brief Update position to the target position using PID control and
-    feedforward.
-      @param p_from_scratch A bool indicator of if the target being moved to is
-    new (1) or not (0). If the target is new, reset integral value to 0.
-  */
-  void update_position(bool p_from_scratch);
+   * @brief Update position to the target position using PID control and
+   * feedforward.
+   */
+  void position_pid_periodic();
+
   /**
    * @brief Feedforward values to account for gravity/weight
    * @return Current feedforward value
@@ -182,67 +175,46 @@ public:
   float position_feedforward();
 
   /**
-   * @brief Set the clamped power in the positive direction.
-   * @param p_power The upper bounds of the power.
+   * @brief Set the target velocity of the servo.
+   * The servo will try to reach this velocity using acceleration limits.
+   * This may change the clamped speed.
+   * @param p_target_velocity The target velocity to set, it is a float value in
+   * degrees per second.
    */
-  void set_pos_clamped_power(float p_power);
+  void start_velocity_pid(float p_target_velocity);
   /**
-   * @brief Returns the clamped power in the positive direction.
-   * @return power (float)
+   * @brief Get the target velocity of the servo.
+   * @return The target velocity of the servo as a float value representing
+   * degrees per second.
    */
-  float get_pos_clamped_power();
+  float get_target_velocity();
   /**
-   * @brief Set the clamped power in the negative direction.
-   * @param p_power The lower bounds of the power.
-   */
-  void set_neg_clamped_power(float p_power);
+    * @brief Update velocity to the target velocity using PID control and
+    feedforward.
+    */
+  void velocity_pid_periodic();
   /**
-   * @brief Returns the clamped power in the negative direction.
-   * @return power (float)
+   * @brief Update the PID settings of the servo.
+   * @param p_settings The PID settings to update.
    */
-  float get_neg_clamped_power();
+  void update_pid_velocity(pid_settings p_settings);
+  /**
+   * @brief Update the velocity PID settings
+   * @return the settings for velocity PID.
+   */
+  pid_settings get_pid_velocity_settings();
 
   /**
-   * @brief Sets the power (ignores clamped power)
-   * Use with caution. Check max power beforehand.
-   * @param p_power The power to set the motor to, as a float between -1.0
-   * and 1.0 where -1 is the maximum in one direction and 1 is the maximum in
-   * the other direction.
+   * @brief TURNS OFF (Power = 0)
    */
-  void set_power(float p_power);
+  void stop();
 
+  void start_home_encoder();
   /**
-   * @brief Get the power the servo is using.
-   * @return The power as a float between 0.0 and 1.0, representing 0% to 100%
-   * of maximum possible power.
+   * @brief Remembers the current position of the encoder as the home position.
+   * This should be called when the servo is homed.
    */
-  float get_power();
-
-  /**
-   * @brief Set the servo's current action
-   * @param p_action can_perseus::action value to be set
-   */
-  void set_active_action(action p_action);
-
-  /**
-   * @brief Get the servo's current action
-   * @return Returns the current action as a can_perseus::action
-   */
-  action get_active_action();
-
-  /**
-   * @brief Resets the internal time tracking for the servo, this will be done
-   * when PID switches between Position and Velocity control.
-   */
-  void reset_time();
-
-  /**
-   * @brief Get the current PID settings of the servo.
-   * @return The current PID settings of the servo.
-   */
-  bldc_perseus::pid_settings get_pid_settings();
-
-  void periodic_action(bool p_new_action);
+  void home_encoder_periodic();
 
   /**
    * @brief Set the angle offset of the servo.
@@ -271,28 +243,11 @@ public:
    */
   float get_actual_position();
 
-  /**
-   * @brief Set servo values
-   * @param p_physical_servo_values The values to set (physical_servo_values
-   * class)
-   */
-  void set_physical_servo_values(physical_servo_values p_physical_servo_values);
-
-  /**
-   * @brief Get servo values object
-   *
-   * @return physical_servo_values
-   */
-  physical_servo_values get_physical_servo_values();
-
-  hal::time_duration get_clock_time(hal::steady_clock& p_clock);
-
 private:
   hal::v5::strong_ptr<sjsu::drivers::h_bridge> m_h_bridge;
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
   // hal::v5::strong_ptr<hal::input_pin> m_homing_pin;
-  hal::u64 m_last_clock_check;
   status m_target;
   pid_settings m_reading_position_settings;
   pid_settings m_reading_velocity_settings;
@@ -301,7 +256,7 @@ private:
   physical_servo_values m_physical_servo_values;
   float m_prev_joint_position;
   float m_active_power;
-  action m_active_action;
+  mode m_active_mode;
 };
 
 }  // namespace sjsu::perseus

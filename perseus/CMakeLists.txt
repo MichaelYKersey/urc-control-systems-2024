@@ -23,6 +23,7 @@ libhal_build_demos(
     h_bridge_demo
     homing_switch_demo
     pan_demo
+    ramp_power_demo
     switches_demo
 
 

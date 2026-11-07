@@ -28,6 +28,7 @@
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal/can.hpp>
+#include <libhal/input_pin.hpp>
 #include <libhal/output_pin.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/pwm.hpp>
@@ -227,7 +228,6 @@ static hal::v5::optional_ptr<hal::input_pin> homing_pin_ptr;
 hal::v5::strong_ptr<hal::input_pin> homing_pin()
 {
   if (not homing_pin_ptr) {
-    // CHECK IF ACTUALLY THE PIN
     auto homing_pin = gpio_b().acquire_input_pin(15);
     homing_pin_ptr = hal::v5::make_strong_ptr<decltype(homing_pin)>(
       driver_allocator(), std::move(homing_pin));
@@ -326,22 +326,6 @@ hal::v5::strong_ptr<sjsu::drivers::h_bridge> h_bridge()
   return h_bridge_ptr;
 }
 
-static hal::v5::optional_ptr<bldc_perseus> servo_ptr;
-hal::v5::strong_ptr<sjsu::perseus::bldc_perseus> servo()
-{
-  auto consle_ref = resources::console();
-  if (not servo_ptr) {
-    auto h_bridge = resources::h_bridge();
-    auto encoder = resources::encoder();
-    // auto homing_pin = resources::homing_pin();
-    auto clock_ref = resources::clock();
-    auto servo = bldc_perseus(h_bridge, encoder, clock_ref);
-    servo_ptr = hal::v5::make_strong_ptr<decltype(servo)>(
-      resources::driver_allocator(), std::move(servo));
-  }
-  return servo_ptr;
-}
-
 static hal::v5::optional_ptr<hal::stm32f1::can_peripheral_manager_v2>
   can_manager;
 void initialize_can()
@@ -353,7 +337,7 @@ void initialize_can()
         driver_allocator(),
         32,
         driver_allocator(),
-        100'000,
+        1'000'000,
         *clock_ref,
         std::chrono::milliseconds(1),
         hal::stm32f1::can_pins::pb9_pb8);

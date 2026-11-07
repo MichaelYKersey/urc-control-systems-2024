@@ -1,3 +1,4 @@
+#include "bldc_servo.hpp"
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -25,7 +26,10 @@ void application()
   auto console = resources::console();
 
   // variables used to initialize bldc_perseus
-  bldc_perseus::pid_settings pid_settings;
+  bldc_perseus::PID_settings pid_settings_position;
+  bldc_perseus::PID_settings pid_settings_velocity = { .kp = 0.0001,
+                                                       .ki = 0.000,
+                                                       .kd = 0.01 };
   bldc_perseus::physical_servo_values physical_servo_values;
   // variables used to initialize can_perseus
   can_perseus::servo_address allowed_id;
@@ -37,30 +41,30 @@ void application()
   // set servo values according to switch
   switch (allowed_id) {
     case can_perseus::track_servo:
-      pid_settings = track_pid_settings;
+      pid_settings_position = track_pid_settings;
       physical_servo_values = track_physical_servo_values;
       break;
     case can_perseus::shoulder_servo:
-      pid_settings = shoulder_pid_settings;
+      pid_settings_position = shoulder_pid_settings;
       physical_servo_values = shoulder_physical_servo_values;
       break;
     case can_perseus::elbow_servo:
-      pid_settings = elbow_pid_settings;
+      pid_settings_position = elbow_pid_settings;
       physical_servo_values = elbow_physical_servo_values;
       listen_prev = can_perseus::shoulder_servo;
       break;
     case can_perseus::wrist_left:
-      pid_settings = wrist_left_pid_settings;
+      pid_settings_position = wrist_left_pid_settings;
       physical_servo_values = wrist_left_physical_servo_values;
       listen_prev = can_perseus::elbow_servo;
       break;
     case can_perseus::wrist_right:
-      pid_settings = wrist_right_pid_settings;
+      pid_settings_position = wrist_right_pid_settings;
       physical_servo_values = wrist_right_physical_servo_values;
       listen_prev = can_perseus::elbow_servo;
       break;
     case can_perseus::end_effector:
-      pid_settings = end_effector_pid_settings;
+      pid_settings_position = end_effector_pid_settings;
       physical_servo_values = end_effector_physical_servo_values;
       break;
     default:
@@ -69,10 +73,12 @@ void application()
   }
 
   // create bldc_perseus
-  auto servo_ptr = resources::servo();
-  servo_ptr->update_pid_position(pid_settings);
-  servo_ptr->set_physical_servo_values(physical_servo_values);
-  servo_ptr->get_actual_position();
+  auto bldc =
+    bldc_perseus(resources::h_bridge(), resources::encoder(), allowed_id);
+  bldc.update_pid_position(pid_settings_position);
+  bldc.update_pid_velocity(pid_settings_velocity);
+  bldc.set_physical_servo_values(physical_servo_values);
+  bldc.get_actual_position();
   hal::print(*console, "pre-can\n");
 
   // create can_perseus

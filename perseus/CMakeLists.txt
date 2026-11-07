@@ -19,6 +19,7 @@ project(demos LANGUAGES CXX)
 libhal_build_demos(
   DEMOS
     application
+    bldc_demo
     can_messaging_demo
     h_bridge_demo
     homing_switch_demo

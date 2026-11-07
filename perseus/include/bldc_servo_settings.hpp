@@ -13,7 +13,8 @@ constexpr bldc_perseus::pid_settings track_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values track_physical_servo_values = {
   .gear_ratio = 16915.5,  // 751.8 * 1 / 2 * 360 / 8 (for mm)
-  .angle_offset = 0,
+  .angle_offset_from_gravity = 0,
+  .angle_offset_from_wake = 0,
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
@@ -28,7 +29,8 @@ constexpr bldc_perseus::pid_settings shoulder_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values shoulder_physical_servo_values = {
   .gear_ratio = 73935.4,  // 5281.1 * 28 / 2
-  .angle_offset = 0,
+  .angle_offset_from_gravity = -50,
+  .angle_offset_from_wake = 0,
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
@@ -43,7 +45,8 @@ constexpr bldc_perseus::pid_settings elbow_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values elbow_physical_servo_values = {
   .gear_ratio = 5281.1,  // 5281.1 * 2 / 2
-  .angle_offset = 0,
+  .angle_offset_from_gravity = -60,
+  .angle_offset_from_wake = 0,
   .fight_gravity = 0.15,
   .high_clamped_value = 0.1,
   .low_clamped_value = -0.3,
@@ -58,7 +61,8 @@ constexpr bldc_perseus::pid_settings wrist_left_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values
   wrist_left_physical_servo_values = { .gear_ratio = 2640.55,  // 5281.1 * 1 / 2
-                                       .angle_offset = 0,
+                                       .angle_offset_from_gravity = 0,
+                                       .angle_offset_from_wake = 0,
                                        .fight_gravity = 0.2,
                                        .high_clamped_value = 0.3,
                                        .low_clamped_value = -0.3,
@@ -71,9 +75,9 @@ constexpr bldc_perseus::pid_settings wrist_right_pid_settings = {
   .kd = 0.00,
 };
 constexpr bldc_perseus::physical_servo_values
-  wrist_right_physical_servo_values = { .gear_ratio =
-                                          2640.55,  // 5281.1 * 1 / 2
-                                        .angle_offset = 0,
+  wrist_right_physical_servo_values = { .gear_ratio = 2640.55,  // 5281.1 * 1 / 2
+                                        .angle_offset_from_gravity = 0,
+                                        .angle_offset_from_wake = 0,
                                         .fight_gravity = 0.2,
                                         .high_clamped_value = 0.3,
                                         .low_clamped_value = -0.3,
@@ -86,9 +90,9 @@ constexpr bldc_perseus::pid_settings end_effector_pid_settings = {
   .kd = 0.05,
 };
 constexpr bldc_perseus::physical_servo_values
-  end_effector_physical_servo_values = { .gear_ratio =
-                                           73935.4,  // 5281.1 * 28 / 2
-                                         .angle_offset = 0,
+  end_effector_physical_servo_values = { .gear_ratio = 73935.4,  // 5281.1 * 28 / 2
+                                         .angle_offset_from_gravity = 0,
+                                         .angle_offset_from_wake = 0,
                                          .fight_gravity = 0,
                                          .high_clamped_value = 0.45,
                                          .low_clamped_value = -0.45,

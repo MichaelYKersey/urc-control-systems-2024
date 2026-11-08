@@ -214,7 +214,8 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
       float reading_position = float_setter(current_action, p_message);
 
       float new_angle_offset = p_bldc.get_actual_position() - reading_position;
-      p_bldc.set_angle_offset_from_wake(p_bldc.get_angle_offset_from_wake() - new_angle_offset);
+      p_bldc.set_angle_offset_from_wake(p_bldc.get_angle_offset_from_wake() -
+                                        new_angle_offset);
       hal::print<64>(*console, "reading = %f\n", reading_position);
       break;
     }
@@ -256,7 +257,7 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
       break;
     }
     case action::read_velocity_reading: {
-      float read_value = position_to_rotations(p_bldc.get_reading_velocity());
+      float read_value = position_to_rotations(p_bldc.get_velocity_reading());
       response = float_getter(current_action, read_value, 14);
       break;
     }

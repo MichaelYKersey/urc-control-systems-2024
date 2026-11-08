@@ -53,7 +53,7 @@ float bldc_perseus::get_target_velocity()
 {
   return m_target.velocity;
 }
-float bldc_perseus::get_reading_velocity()
+float bldc_perseus::get_velocity_reading()
 {
   hal::u64 time_t0 = m_clock->uptime();
   hal::degrees pos_p0 = read_angle();
@@ -86,16 +86,17 @@ void bldc_perseus::stop()
   set_power(0.0f);
 }
 
-void bldc_perseus::update_pid_position(pid_settings settings)
+void bldc_perseus::update_pid_position(pid_settings p_settings)
 {
-  m_reading_position_settings = settings;
+  m_position_pid_settings = p_settings;
 }
-void bldc_perseus::update_pid_velocity(pid_settings settings)
+void bldc_perseus::update_pid_velocity(pid_settings p_settings)
 {
-  m_reading_velocity_settings = settings;
+  m_velocity_pid_settings = p_settings;
 }
 
-void bldc_perseus::start_home_encoder() {
+void bldc_perseus::start_home_encoder()
+{
   m_active_mode = mode::homing;
   home_encoder_periodic();
 }
@@ -122,16 +123,16 @@ void bldc_perseus::velocity_pid_periodic()
 {
   auto console = resources::console();
   // pid portion
-  float error = m_target.velocity - get_reading_velocity();
-  sec curr_time =
-    drivers::time_util::hal_time_duration_to_sec(sjsu::drivers::time_util::get_clock_time(*m_clock));
+  float error = m_target.velocity - get_velocity_reading();
+  sec curr_time = drivers::time_util::hal_time_duration_to_sec(
+    sjsu::drivers::time_util::get_clock_time(*m_clock));
   sec dt = curr_time - m_pid_prev_velocity_values.prev_timestamp;
   m_pid_prev_velocity_values.integral += error * dt;
   float derivative = (error - m_pid_prev_velocity_values.last_error) / dt;
-  float p_term = m_reading_velocity_settings.kp * error;
+  float p_term = m_velocity_pid_settings.kp * error;
   float i_term =
-    m_reading_velocity_settings.ki * m_pid_prev_velocity_values.integral;
-  float d_term = m_reading_velocity_settings.kd * derivative;
+    m_velocity_pid_settings.ki * m_pid_prev_velocity_values.integral;
+  float d_term = m_velocity_pid_settings.kd * derivative;
   m_pid_prev_velocity_values.last_error = error;
   m_pid_prev_velocity_values.prev_timestamp = curr_time;
   float pid_sum = p_term + i_term + d_term;
@@ -143,7 +144,7 @@ void bldc_perseus::velocity_pid_periodic()
     *console,
     "Target: %f, Velocity: %f, Error: %f, pid: %f, projected: %f\n",
     m_target.velocity,
-    get_reading_velocity(),
+    get_velocity_reading(),
     error,
     pid_sum,
     projected_power);
@@ -162,10 +163,10 @@ void bldc_perseus::position_pid_periodic()
   sec dt = curr_time - m_pid_prev_position_values.prev_timestamp;
   m_pid_prev_position_values.integral += error * dt;
   float derivative = (error - m_pid_prev_position_values.last_error) / dt;
-  float p_term = m_reading_position_settings.kp * error;
+  float p_term = m_position_pid_settings.kp * error;
   float i_term =
-    m_reading_position_settings.ki * m_pid_prev_position_values.integral;
-  float d_term = m_reading_position_settings.kd * derivative;
+    m_position_pid_settings.ki * m_pid_prev_position_values.integral;
+  float d_term = m_position_pid_settings.kd * derivative;
   m_pid_prev_position_values.last_error = error;
   m_pid_prev_position_values.prev_timestamp = curr_time;
   float pid_sum = p_term + i_term + d_term;
@@ -196,9 +197,9 @@ float bldc_perseus::position_feedforward()
          m_physical_servo_values.fight_gravity;
 }
 
-void bldc_perseus::set_prev_joint_position(float prev_joint_pos)
+void bldc_perseus::set_prev_joint_position(hal::degrees p_prev_joint_pos)
 {
-  m_prev_joint_position = prev_joint_pos;
+  m_prev_joint_position = p_prev_joint_pos;
 }
 
 float bldc_perseus::get_prev_joint_position()
@@ -206,9 +207,9 @@ float bldc_perseus::get_prev_joint_position()
   return m_prev_joint_position;
 }
 
-void bldc_perseus::set_angle_offset_from_gravity(float angle_offset)
+void bldc_perseus::set_angle_offset_from_gravity(hal::degrees p_angle_offset)
 {
-  m_physical_servo_values.angle_offset_from_gravity = angle_offset;
+  m_physical_servo_values.angle_offset_from_gravity = p_angle_offset;
 }
 
 float bldc_perseus::get_angle_offset_from_gravity()
@@ -216,9 +217,9 @@ float bldc_perseus::get_angle_offset_from_gravity()
   return m_physical_servo_values.angle_offset_from_gravity;
 }
 
-void bldc_perseus::set_angle_offset_from_wake(float angle_offset)
+void bldc_perseus::set_angle_offset_from_wake(hal::degrees p_angle_offset)
 {
-  m_physical_servo_values.angle_offset_from_wake = angle_offset;
+  m_physical_servo_values.angle_offset_from_wake = p_angle_offset;
 }
 
 float bldc_perseus::get_angle_offset_from_wake()
@@ -269,11 +270,11 @@ bldc_perseus::mode bldc_perseus::get_active_mode()
 
 bldc_perseus::pid_settings bldc_perseus::get_position_pid_settings()
 {
-  return m_reading_position_settings;
+  return m_position_pid_settings;
 }
 bldc_perseus::pid_settings bldc_perseus::get_pid_velocity_settings()
 {
-  return m_reading_velocity_settings;
+  return m_velocity_pid_settings;
 }
 
 }  // namespace sjsu::perseus

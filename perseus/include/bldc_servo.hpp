@@ -102,16 +102,11 @@ public:
    */
   hal::degrees read_angle();
   /**
-   * @brief Get the current position of the servo.
-   * @return Gets the position relative to the home position.
-   */
-  hal::degrees get_reading_position();
-  /**
    * @brief Get the current velocity of the servo.
    * @return The current velocity of the servo as a float value representing
    * degrees per second.
    */
-  float get_reading_velocity();
+  float get_velocity_reading();
 
   /**
    * @brief Get the servo's current action
@@ -217,16 +212,16 @@ public:
    */
   void home_encoder_periodic();
 
-  void set_angle_offset_from_gravity(float angle_offset);
+  void set_angle_offset_from_gravity(hal::degrees p_angle_offset);
   float get_angle_offset_from_gravity();
-  void set_angle_offset_from_wake(float angle_offset);
+  void set_angle_offset_from_wake(hal::degrees p_angle_offset);
   float get_angle_offset_from_wake();
 
   /**
    * @brief Set the previous joint's recorded position.
    * @param p_prev_joint_pos The previous joint's position (float).
    */
-  void set_prev_joint_position(float p_prev_joint_pos);
+  void set_prev_joint_position(hal::degrees p_prev_joint_pos);
   /**
    * @brief Get the previous joint's recorded position.
    * @return The previous joint's position (float).
@@ -245,8 +240,8 @@ private:
   hal::v5::strong_ptr<hal::input_pin> m_homing_pin;
   hal::u64 m_last_clock_check;
   status m_target;
-  pid_settings m_reading_position_settings;
-  pid_settings m_reading_velocity_settings;
+  pid_settings m_position_pid_settings;
+  pid_settings m_velocity_pid_settings;
   pid_prev_values m_pid_prev_velocity_values;
   pid_prev_values m_pid_prev_position_values;
   physical_servo_values m_physical_servo_values;

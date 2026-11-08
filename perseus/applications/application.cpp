@@ -26,8 +26,8 @@ void application()
   auto console = resources::console();
 
   // variables used to initialize bldc_perseus
-  bldc_perseus::PID_settings pid_settings_position;
-  bldc_perseus::PID_settings pid_settings_velocity = { .kp = 0.0001,
+  bldc_perseus::pid_settings pid_settings_position;
+  bldc_perseus::pid_settings pid_settings_velocity = { .kp = 0.0001,
                                                        .ki = 0.000,
                                                        .kd = 0.01 };
   bldc_perseus::physical_servo_values physical_servo_values;
@@ -74,7 +74,7 @@ void application()
 
   // create bldc_perseus
   auto bldc =
-    bldc_perseus(resources::h_bridge(), resources::encoder(), allowed_id);
+    bldc_perseus(resources::h_bridge(), resources::encoder(), resources::clock(), resources::homing_pin());
   bldc.update_pid_position(pid_settings_position);
   bldc.update_pid_velocity(pid_settings_velocity);
   bldc.set_physical_servo_values(physical_servo_values);
@@ -108,11 +108,11 @@ void application()
     // react to message
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
-      servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Mode: %x \n", servo_ptr->get_active_mode());
+      servo_can.process_can_message(*msg, bldc);
+      hal::print<64>(*console, "Mode: %x \n", bldc.get_active_mode());
     }
 
-    servo_ptr->periodic();
+    bldc.periodic();
 
     // check group message message
     msg = servo_can.check_for_group_message();
@@ -120,8 +120,8 @@ void application()
     // react to message
     if (msg) {
       drivers::can_util::print_can_message(*console, *msg);
-      servo_can.process_can_message(*msg, *servo_ptr);
-      hal::print<64>(*console, "Mode: %x \n", servo_ptr->get_active_mode());
+      servo_can.process_can_message(*msg, bldc);
+      hal::print<64>(*console, "Mode: %x \n", bldc.get_active_mode());
     }
   }
 }

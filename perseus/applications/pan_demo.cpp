@@ -15,7 +15,8 @@ void application()
 
   bldc_perseus::physical_servo_values physical_servo_values = {
     .gear_ratio = 188.0f / 1.0f * 28.0f,
-    .angle_offset = 0.0,
+    .angle_offset_from_gravity = 0.0,
+    .angle_offset_from_wake = 0,
     .fight_gravity = 0.0,
     .high_clamped_value = 0.5,
     .low_clamped_value = -0.5,
@@ -26,26 +27,27 @@ void application()
     .homing_power = 0.0f
   };
   bldc_perseus::pid_settings pid_settings = { .kp = 0.001, .ki = 0, .kd = 0 };
-  auto servo_ptr = resources::servo();
-  servo_ptr->update_pid_position(pid_settings);
-  servo_ptr->set_physical_servo_values(physical_servo_values);
+  auto bldc =
+    bldc_perseus(resources::h_bridge(), resources::encoder(), resources::clock(), resources::homing_pin());
+  bldc.update_pid_position(pid_settings);
+  bldc.set_physical_servo_values(physical_servo_values);
 
   hal::print(*console, "start loop\n");
 
   uint64_t deadline;
   while (true) {
     hal::print(*console, "pos 0\n");
-    servo_ptr->start_position_pid(0);
+    bldc.start_position_pid(0);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {
-      servo_ptr->position_pid_periodic();
+      bldc.position_pid_periodic();
     }
 
     hal::print(*console, "pos 360\n");
-    servo_ptr->start_position_pid(360);
+    bldc.start_position_pid(360);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {
-      servo_ptr->position_pid_periodic();
+      bldc.position_pid_periodic();
     }
   }
 }

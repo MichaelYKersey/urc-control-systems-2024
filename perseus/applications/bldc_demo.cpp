@@ -1,3 +1,4 @@
+#include "bldc_servo.hpp"
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/pointers.hpp>
@@ -22,8 +23,8 @@ void application()
   auto console = resources::console();
 
   // variables used to initialize bldc_perseus
-  bldc_perseus::PID_settings pid_settings_position;
-  bldc_perseus::PID_settings pid_settings_velocity = { .kp = 0.0001,
+  bldc_perseus::pid_settings pid_settings_position;
+  bldc_perseus::pid_settings pid_settings_velocity = { .kp = 0.0001,
                                                        .ki = 0.000,
                                                        .kd = 0.01 };
   bldc_perseus::physical_servo_values physical_servo_values;
@@ -63,7 +64,7 @@ void application()
 
   // create bldc_perseus
   auto bldc =
-    bldc_perseus(resources::h_bridge(), resources::encoder(), allowed_id);
+    bldc_perseus(resources::h_bridge(), resources::encoder(), resources::clock(), resources::homing_pin());
   bldc.update_pid_position(pid_settings_position);
   bldc.update_pid_velocity(pid_settings_velocity);
   bldc.set_physical_servo_values(physical_servo_values);
@@ -71,7 +72,10 @@ void application()
 
   hal::print(*console, "Begin.\n");
 
-  bldc.home_encoder();
+  bldc.start_home_encoder();
+  while (bldc.get_active_mode() == bldc_perseus::mode::homing) {
+    bldc.periodic();
+  }
   hal::print<64>(*console, "%f", bldc.get_actual_position());
 }
 }  // namespace sjsu::perseus

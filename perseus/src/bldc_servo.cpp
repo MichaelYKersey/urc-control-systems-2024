@@ -95,23 +95,21 @@ void bldc_perseus::update_pid_velocity(pid_settings settings)
   m_reading_velocity_settings = settings;
 }
 
+void bldc_perseus::start_home_encoder() {
+  m_active_mode = mode::homing;
+  home_encoder_periodic();
+}
+
 void bldc_perseus::home_encoder_periodic()
 {
   auto console = resources::console();
-  float pow = -0.2f;
-  // elbow spins diff from track, shoulder
-  if (m_servo_addr == 0x123) {
-    pow = 0.001f;
-  }
-
   // only spin track, shoulder, elbow
   // bc unknown how to deal with wrist, end-effector
-  if (m_servo_addr < 0x125) {
-    set_power(pow);
-    while (m_homing_pin->level() == true) {
-    }
-    set_angle_offset_from_wake(read_angle() * -1);
+  set_power(m_physical_servo_values.homing_power);
+  if (m_homing_pin->level() == true) {
+    return;
   }
+  set_angle_offset_from_wake(read_angle() * -1);
   set_power(0.0f);
 }
 

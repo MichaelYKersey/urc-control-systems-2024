@@ -82,9 +82,8 @@ public:
 
   bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
                hal::v5::strong_ptr<hal::rotation_sensor> p_encoder,
-               hal::v5::strong_ptr<hal::steady_clock> p_clock
-               // hal::v5::optional_ptr<hal::input_pin> p_homing_pin);
-  );
+               hal::v5::strong_ptr<hal::steady_clock> p_clock,
+               hal::v5::optional_ptr<hal::input_pin> p_homing_pin);
 
   /**
    * @brief Set servo values
@@ -244,7 +243,6 @@ private:
   hal::v5::strong_ptr<hal::rotation_sensor> m_encoder;
   hal::v5::strong_ptr<hal::steady_clock> m_clock;
   hal::v5::strong_ptr<hal::input_pin> m_homing_pin;
-  hal::u16 m_servo_addr;
   hal::u64 m_last_clock_check;
   status m_target;
   pid_settings m_reading_position_settings;

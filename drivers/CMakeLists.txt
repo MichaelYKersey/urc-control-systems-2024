@@ -20,6 +20,7 @@ libhal_build_demos(
 
 DEMOS
   adc1283_demo
+  as5600_demo
   blinker_demo
   can_demo
   color_sensor_demo
@@ -41,6 +42,7 @@ INCLUDES
 SOURCES
     src/adc1283.cpp
     src/adc1283_adapters.cpp
+    src/as5600.cpp
     src/clamped_servo.cpp
     src/color_sensor_opt4048.cpp
     src/h_bridge.cpp

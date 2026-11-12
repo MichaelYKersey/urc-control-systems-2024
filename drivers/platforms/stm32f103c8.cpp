@@ -130,6 +130,7 @@ hal::v5::strong_ptr<hal::adc> adc_1()
 static hal::v5::optional_ptr<hal::i2c> i2c_ptr;
 hal::v5::strong_ptr<hal::i2c> i2c()
 {
+  // TODO update to not use bit bang
   if (not i2c_ptr) {
     static auto sda_output_pin = gpio_b().acquire_output_pin(7);
     static auto scl_output_pin = gpio_b().acquire_output_pin(6);

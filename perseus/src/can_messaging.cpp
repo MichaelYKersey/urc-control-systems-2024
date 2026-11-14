@@ -306,6 +306,10 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
   hal::print<64>(*console, "finished transmission\n");
 }
 
+// TODO add function for updating MC on finished status
+// should be sent when homed or when within acceptable range for position
+// "stagnant" status?
+
 std::optional<hal::can_message> can_perseus::check_for_individual_message()
 {
   auto msg = m_individual_command_message_finder.find();

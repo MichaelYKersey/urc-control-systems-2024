@@ -13,13 +13,13 @@ constexpr bldc_perseus::pid_settings track_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values track_physical_servo_values = {
   .gear_ratio = 16915.5,  // 751.8 * 1 / 2 * 360 / 8 (for mm)
-  .angle_offset_from_gravity = 0,
+  .homing_limitswitch_position = 0,
   .angle_offset_from_wake = 0,
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
-  .clockwise_positive = false,
-  .homing_power = -0.2f
+  .homing_power = -0.2f,
+  .clockwise_positive = false
 };
 
 // shoulder
@@ -30,13 +30,13 @@ constexpr bldc_perseus::pid_settings shoulder_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values shoulder_physical_servo_values = {
   .gear_ratio = 73935.4,  // 5281.1 * 28 / 2
-  .angle_offset_from_gravity = -50,
+  .homing_limitswitch_position = -45,
   .angle_offset_from_wake = 0,
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
-  .clockwise_positive = false,
-  .homing_power = -0.2f
+  .homing_power = -0.2f,
+  .clockwise_positive = false
 };
 
 // elbow
@@ -47,13 +47,13 @@ constexpr bldc_perseus::pid_settings elbow_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values elbow_physical_servo_values = {
   .gear_ratio = 5281.1,  // 5281.1 * 2 / 2
-  .angle_offset_from_gravity = -60,
+  .homing_limitswitch_position = -60,
   .angle_offset_from_wake = 0,
   .fight_gravity = 0.15,
   .high_clamped_value = 0.1,
   .low_clamped_value = -0.3,
-  .clockwise_positive = false,
-  .homing_power = 0.001f
+  .homing_power = 0.001f,
+  .clockwise_positive = false
 };
 
 // wrist_left
@@ -64,13 +64,13 @@ constexpr bldc_perseus::pid_settings wrist_left_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values
   wrist_left_physical_servo_values = { .gear_ratio = 2640.55,  // 5281.1 * 1 / 2
-                                       .angle_offset_from_gravity = 0,
+                                       .homing_limitswitch_position = 0,
                                        .angle_offset_from_wake = 0,
                                        .fight_gravity = 0.2,
                                        .high_clamped_value = 0.3,
                                        .low_clamped_value = -0.3,
-                                       .clockwise_positive = false,
-                                       .homing_power = -0.2f };
+                                       .homing_power = 0.0f,
+                                       .clockwise_positive = false };
 
 // wrist_right
 constexpr bldc_perseus::pid_settings wrist_right_pid_settings = {
@@ -81,13 +81,13 @@ constexpr bldc_perseus::pid_settings wrist_right_pid_settings = {
 constexpr bldc_perseus::physical_servo_values
   wrist_right_physical_servo_values = { .gear_ratio =
                                           2640.55,  // 5281.1 * 1 / 2
-                                        .angle_offset_from_gravity = 0,
+                                        .homing_limitswitch_position = 0,
                                         .angle_offset_from_wake = 0,
                                         .fight_gravity = 0.2,
                                         .high_clamped_value = 0.3,
                                         .low_clamped_value = -0.3,
-                                        .clockwise_positive = true,
-                                        .homing_power = -0.2f };
+                                        .homing_power = 0.0f,
+                                        .clockwise_positive = true };
 
 // end_effector
 constexpr bldc_perseus::pid_settings end_effector_pid_settings = {
@@ -98,12 +98,12 @@ constexpr bldc_perseus::pid_settings end_effector_pid_settings = {
 constexpr bldc_perseus::physical_servo_values
   end_effector_physical_servo_values = { .gear_ratio =
                                            73935.4,  // 5281.1 * 28 / 2
-                                         .angle_offset_from_gravity = 0,
+                                         .homing_limitswitch_position = 0,
                                          .angle_offset_from_wake = 0,
                                          .fight_gravity = 0,
                                          .high_clamped_value = 0.45,
                                          .low_clamped_value = -0.45,
-                                         .clockwise_positive = false,
-                                         .homing_power = 0.0f };
+                                         .homing_power = 0.0f,
+                                         .clockwise_positive = false };
 
 }  // namespace sjsu::perseus

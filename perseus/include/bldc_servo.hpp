@@ -22,6 +22,7 @@ class bldc_perseus
 public:
   enum class mode
   {
+    stagnant,
     power,
     homing,
     velocity,
@@ -64,20 +65,18 @@ public:
     // convert from ticks to degrees or mm
     float gear_ratio = 1.0;
     // offset of homed angle from ground (where limit switch should hit)
-    float angle_offset_from_gravity = 0.0;
+    hal::degrees homing_limitswitch_position = 0.0;
     // offset from wake-up zero (so homed angle is zero)
-    float angle_offset_from_wake = 0.0;
+    hal::degrees angle_offset_from_wake = 0.0;
     // power needed to keep servo in place when link parallel to ground
     float fight_gravity = 0.0;
     // limits on power for safety
     float high_clamped_value = 0.0;
     float low_clamped_value = 0.0;
+    // speed for homing
+    float homing_power = 0.0f;
     // motor spins clockwise when positive power applied
     bool clockwise_positive = false;
-    hal::degrees position_min = -std::numeric_limits<float>::infinity();
-    hal::degrees position_max = std::numeric_limits<float>::infinity();
-    hal::degrees homing_limitswitch_position = NAN;
-    float homing_power = 0.0f;
   };
 
   bldc_perseus(hal::v5::strong_ptr<sjsu::drivers::h_bridge> p_hbridge,
@@ -212,8 +211,8 @@ public:
    */
   void home_encoder_periodic();
 
-  void set_angle_offset_from_gravity(hal::degrees p_angle_offset);
-  float get_angle_offset_from_gravity();
+  void set_homing_limitswitch_position(hal::degrees p_angle_offset);
+  float get_homing_limitswitch_position();
   void set_angle_offset_from_wake(hal::degrees p_angle_offset);
   float get_angle_offset_from_wake();
 

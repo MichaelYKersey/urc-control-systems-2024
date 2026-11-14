@@ -1,4 +1,3 @@
-#include "bldc_servo.hpp"
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -73,8 +72,10 @@ void application()
   }
 
   // create bldc_perseus
-  auto bldc =
-    bldc_perseus(resources::h_bridge(), resources::encoder(), resources::clock(), resources::homing_pin());
+  auto bldc = bldc_perseus(resources::h_bridge(),
+                           resources::encoder(),
+                           resources::clock(),
+                           resources::homing_pin());
   bldc.update_pid_position(pid_settings_position);
   bldc.update_pid_velocity(pid_settings_velocity);
   bldc.set_physical_servo_values(physical_servo_values);

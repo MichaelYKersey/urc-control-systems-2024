@@ -1,8 +1,8 @@
-#include "can_commands.hpp"
-#include <bldc_servo.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/units.hpp>
+
+#include <can_commands.hpp>
 #include <resource_list.hpp>
 
 using namespace std::chrono_literals;
@@ -19,13 +19,13 @@ void application()
 
   uint64_t deadline;
   while (true) {
-    hal::print(*console,"power: 0.3\n");
+    hal::print(*console, "power: 0.3\n");
     h_bridge->power(0.3);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {
     }
 
-    hal::print(*console,"power: -0.3\n");
+    hal::print(*console, "power: -0.3\n");
     h_bridge->power(-0.3);
     deadline = hal::future_deadline(*clock, 10s);
     while (deadline > clock->uptime()) {

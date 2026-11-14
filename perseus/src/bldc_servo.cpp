@@ -83,7 +83,7 @@ void bldc_perseus::set_power(float p_power)
 
 void bldc_perseus::stop()
 {
-  set_power(0.0f);
+  set_h_bridge_power(0.0f);
 }
 
 void bldc_perseus::update_pid_position(pid_settings p_settings)
@@ -106,12 +106,14 @@ void bldc_perseus::home_encoder_periodic()
   auto console = resources::console();
   // only spin track, shoulder, elbow
   // bc unknown how to deal with wrist, end-effector
-  set_power(m_physical_servo_values.homing_power);
+  set_h_bridge_power(m_physical_servo_values.homing_power);
+  // high = not pressed, low = pressed
   if (m_homing_pin->level() == true) {
     return;
   }
   set_angle_offset_from_wake(read_angle() * -1);
-  set_power(0.0f);
+  set_h_bridge_power(0.0f);
+  m_active_mode = mode::stagnant;
 }
 
 hal::degrees bldc_perseus::read_angle()
@@ -149,7 +151,7 @@ void bldc_perseus::velocity_pid_periodic()
     pid_sum,
     projected_power);
   m_active_power = projected_power;
-  m_h_bridge->power(m_active_power);
+  set_h_bridge_power(m_active_power);
 }
 
 // position
@@ -186,7 +188,7 @@ void bldc_perseus::position_pid_periodic()
     pid_sum,
     projected_power);
   m_active_power = projected_power;
-  m_h_bridge->power(m_active_power);
+  set_h_bridge_power(m_active_power);
 }
 
 // use actual position here once can be communicated/calculated via can
@@ -207,14 +209,14 @@ float bldc_perseus::get_prev_joint_position()
   return m_prev_joint_position;
 }
 
-void bldc_perseus::set_angle_offset_from_gravity(hal::degrees p_angle_offset)
+void bldc_perseus::set_homing_limitswitch_position(hal::degrees p_angle_offset)
 {
-  m_physical_servo_values.angle_offset_from_gravity = p_angle_offset;
+  m_physical_servo_values.homing_limitswitch_position = p_angle_offset;
 }
 
-float bldc_perseus::get_angle_offset_from_gravity()
+float bldc_perseus::get_homing_limitswitch_position()
 {
-  return m_physical_servo_values.angle_offset_from_gravity;
+  return m_physical_servo_values.homing_limitswitch_position;
 }
 
 void bldc_perseus::set_angle_offset_from_wake(hal::degrees p_angle_offset)
@@ -229,7 +231,7 @@ float bldc_perseus::get_angle_offset_from_wake()
 
 float bldc_perseus::get_actual_position()
 {
-  return read_angle() + m_physical_servo_values.angle_offset_from_gravity +
+  return read_angle() + m_physical_servo_values.homing_limitswitch_position +
          m_physical_servo_values.angle_offset_from_wake + m_prev_joint_position;
 }
 

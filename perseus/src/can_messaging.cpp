@@ -1,6 +1,5 @@
 #include <array>
 #include <cmath>
-#include <cstdint>
 #include <libhal-util/can.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -189,6 +188,7 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
       break;
     }
     case action::homing: {
+      p_bldc.start_home_encoder();
       break;
     }
     // setters
@@ -274,6 +274,11 @@ void can_perseus::process_can_message(hal::can_message const& p_message,
     case action::read_pid_velocity_config: {
       bldc_perseus::pid_settings settings = p_bldc.get_position_pid_settings();
       response = pid_settings_getter(current_action, settings);
+      break;
+    }
+    case action::read_active_mode: {
+      response.length = 2;
+      response.payload[1] = static_cast<hal::byte>(p_bldc.get_active_mode());
       break;
     }
     case action::prev_joint_actual_position: {

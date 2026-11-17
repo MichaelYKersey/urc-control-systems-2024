@@ -1,4 +1,4 @@
-#pragma  once
+#pragma once
 #include <cstdint>
 namespace sjsu::perseus {
 
@@ -26,6 +26,9 @@ enum class action : uint8_t
   read_power = 0x26,
   read_pid_position_config = 0x27,
   read_pid_velocity_config = 0x28,
+  // TODO: add in for mc
+  // also add mode enum on CAN doc
+  read_active_mode = 0x29,
 
   // servo to servo
   prev_joint_actual_position = 0x41,

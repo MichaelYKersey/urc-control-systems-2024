@@ -10,7 +10,6 @@
 #include <libhal/units.hpp>
 
 #include <h_bridge.hpp>
-#include <limits>
 
 using sec = float;
 

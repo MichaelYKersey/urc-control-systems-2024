@@ -30,7 +30,7 @@ constexpr bldc_perseus::pid_settings shoulder_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values shoulder_physical_servo_values = {
   .gear_ratio = 73935.4,  // 5281.1 * 28 / 2
-  .homing_limitswitch_position = -45,
+  .homing_limitswitch_position = -30,
   .angle_offset_from_wake = 0,
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
@@ -47,7 +47,7 @@ constexpr bldc_perseus::pid_settings elbow_pid_settings = {
 };
 constexpr bldc_perseus::physical_servo_values elbow_physical_servo_values = {
   .gear_ratio = 5281.1,  // 5281.1 * 2 / 2
-  .homing_limitswitch_position = -60,
+  .homing_limitswitch_position = -30,
   .angle_offset_from_wake = 0,
   .fight_gravity = 0.15,
   .high_clamped_value = 0.1,

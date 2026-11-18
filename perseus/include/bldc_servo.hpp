@@ -1,6 +1,4 @@
 #pragma once
-#include <bldc_servo.hpp>
-#include <can_commands.hpp>
 #include <cmath>
 #include <libhal-arm-mcu/stm32_generic/quadrature_encoder.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -107,8 +105,8 @@ public:
   float get_velocity_reading();
 
   /**
-   * @brief Get the servo's current action
-   * @return Returns the current action as a can_perseus::action
+   * @brief Get the servo's current mode
+   * @return Returns the current mode as a can_perseus::mode
    */
   mode get_active_mode();
 

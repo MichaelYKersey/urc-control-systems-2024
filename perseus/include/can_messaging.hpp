@@ -1,11 +1,11 @@
 #pragma once
-#include <can_commands.hpp>
 #include <libhal-util/can.hpp>
 #include <libhal/can.hpp>
 #include <libhal/pointers.hpp>
 #include <libhal/units.hpp>
 
 #include <bldc_servo.hpp>
+#include <can_commands.hpp>
 #include <serial_commands.hpp>
 
 namespace sjsu::perseus {

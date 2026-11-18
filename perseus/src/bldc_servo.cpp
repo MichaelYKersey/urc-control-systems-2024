@@ -1,4 +1,3 @@
-#include <bldc_servo.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
@@ -103,7 +102,6 @@ void bldc_perseus::start_home_encoder()
 
 void bldc_perseus::home_encoder_periodic()
 {
-  auto console = resources::console();
   // only spin track, shoulder, elbow
   // bc unknown how to deal with wrist, end-effector
   set_h_bridge_power(m_physical_servo_values.homing_power);
@@ -191,7 +189,6 @@ void bldc_perseus::position_pid_periodic()
   set_h_bridge_power(m_active_power);
 }
 
-// use actual position here once can be communicated/calculated via can
 float bldc_perseus::position_feedforward()
 {
   return std::sin(static_cast<float>(std::numbers::pi / 180) *
@@ -265,6 +262,7 @@ void bldc_perseus::periodic()
       break;
   }
 }
+
 bldc_perseus::mode bldc_perseus::get_active_mode()
 {
   return m_active_mode;

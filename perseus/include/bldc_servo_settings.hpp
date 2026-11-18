@@ -18,7 +18,7 @@ constexpr bldc_perseus::physical_servo_values track_physical_servo_values = {
   .fight_gravity = 0,
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
-  .homing_power = -0.2f,
+  .homing_power = -0.15f,
   .clockwise_positive = false
 };
 

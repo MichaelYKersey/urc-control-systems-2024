@@ -23,10 +23,10 @@ void application()
     } else {
       continue;
     }
-    if (!state) {
-      hal::print(*console, "pressed\n");
+    if (state) {
+      hal::print(*console, "high\n");
     } else {
-      hal::print(*console, "not pressed\n");
+      hal::print(*console, "low\n");
     }
   }
 }

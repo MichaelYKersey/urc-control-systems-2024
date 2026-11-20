@@ -19,6 +19,7 @@ constexpr bldc_perseus::physical_servo_values track_physical_servo_values = {
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
   .homing_power = -0.15f,
+  .homing_switch_pressed_high = false,
   .clockwise_positive = false
 };
 
@@ -36,6 +37,7 @@ constexpr bldc_perseus::physical_servo_values shoulder_physical_servo_values = {
   .high_clamped_value = 0.3,
   .low_clamped_value = -0.3,
   .homing_power = -0.2f,
+  .homing_switch_pressed_high = false,
   .clockwise_positive = false
 };
 
@@ -53,6 +55,7 @@ constexpr bldc_perseus::physical_servo_values elbow_physical_servo_values = {
   .high_clamped_value = 0.1,
   .low_clamped_value = -0.3,
   .homing_power = 0.001f,
+  .homing_switch_pressed_high = false,
   .clockwise_positive = false
 };
 
@@ -70,6 +73,7 @@ constexpr bldc_perseus::physical_servo_values
                                        .high_clamped_value = 0.3,
                                        .low_clamped_value = -0.3,
                                        .homing_power = 0.0f,
+                                       .homing_switch_pressed_high = false,
                                        .clockwise_positive = false };
 
 // wrist_right
@@ -87,6 +91,7 @@ constexpr bldc_perseus::physical_servo_values
                                         .high_clamped_value = 0.3,
                                         .low_clamped_value = -0.3,
                                         .homing_power = 0.0f,
+                                        .homing_switch_pressed_high = false,
                                         .clockwise_positive = true };
 
 // end_effector
@@ -104,6 +109,7 @@ constexpr bldc_perseus::physical_servo_values
                                          .high_clamped_value = 0.45,
                                          .low_clamped_value = -0.45,
                                          .homing_power = 0.0f,
+                                         .homing_switch_pressed_high = false,
                                          .clockwise_positive = false };
 
 }  // namespace sjsu::perseus

@@ -72,6 +72,7 @@ public:
     float low_clamped_value = 0.0;
     // speed for homing
     float homing_power = 0.0f;
+    float homing_switch_pressed_high = false;
     // motor spins clockwise when positive power applied
     bool clockwise_positive = false;
   };

@@ -106,7 +106,7 @@ void bldc_perseus::home_encoder_periodic()
   // bc unknown how to deal with wrist, end-effector
   set_h_bridge_power(m_physical_servo_values.homing_power);
   // high = not pressed, low = pressed
-  if (m_homing_pin->level() == true) {
+  if (m_homing_pin->level() == m_physical_servo_values.homing_switch_pressed_high) {
     return;
   }
   set_angle_offset_from_wake(read_angle() * -1);

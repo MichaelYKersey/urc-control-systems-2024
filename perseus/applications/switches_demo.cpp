@@ -22,9 +22,8 @@ void application()
 
   auto switches_ptr = resources::switches();
   while (true) {
-
-    hal::print<64>(*console, "Pins: %d\n", switches_ptr->read_switch_value());
-    hal::delay(*clock, 5000ms);
+    hal::print<64>(*console, "Pins: %x\n", switches_ptr->read_switch_value());
+    hal::delay(*clock, 1000ms);
   }
 }
 }  // namespace sjsu::perseus

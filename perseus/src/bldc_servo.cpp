@@ -1,3 +1,4 @@
+#include <bldc_servo.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/error.hpp>
@@ -72,7 +73,9 @@ float bldc_perseus::get_power()
 void bldc_perseus::set_h_bridge_power(float p_power)
 {
   m_active_power = p_power;
-  m_h_bridge->power(m_active_power);
+  m_h_bridge->power(std::clamp(m_active_power,
+                               m_physical_servo_values.high_clamped_value,
+                               m_physical_servo_values.low_clamped_value));
 }
 void bldc_perseus::set_power(float p_power)
 {
@@ -106,7 +109,8 @@ void bldc_perseus::home_encoder_periodic()
   // bc unknown how to deal with wrist, end-effector
   set_h_bridge_power(m_physical_servo_values.homing_power);
   // high = not pressed, low = pressed
-  if (m_homing_pin->level() == m_physical_servo_values.homing_switch_pressed_high) {
+  if (m_homing_pin->level() ==
+      m_physical_servo_values.homing_switch_pressed_high) {
     return;
   }
   set_angle_offset_from_wake(read_angle() * -1);
@@ -135,21 +139,16 @@ void bldc_perseus::velocity_pid_periodic()
   float d_term = m_velocity_pid_settings.kd * derivative;
   m_pid_prev_velocity_values.last_error = error;
   m_pid_prev_velocity_values.prev_timestamp = curr_time;
-  float pid_sum = p_term + i_term + d_term;
-  float projected_power =
-    std::clamp(pid_sum,
-               m_physical_servo_values.low_clamped_value,
-               m_physical_servo_values.high_clamped_value);
+  float projected_power = p_term + i_term + d_term;
+  set_h_bridge_power(projected_power);
   hal::print<128>(
     *console,
-    "Target: %f, Velocity: %f, Error: %f, pid: %f, projected: %f\n",
+    "Target: %f, Velocity: %f, Error: %f, projected: %f, clamped power: %f\n",
     m_target.velocity,
     get_velocity_reading(),
     error,
-    pid_sum,
-    projected_power);
-  m_active_power = projected_power;
-  set_h_bridge_power(m_active_power);
+    projected_power,
+    get_power());
 }
 
 // position
@@ -174,17 +173,14 @@ void bldc_perseus::position_pid_periodic()
   float feedforward = bldc_perseus::position_feedforward();
   // apply
   float projected_power = pid_sum + feedforward;
-  projected_power = std::clamp(projected_power,
-                               m_physical_servo_values.low_clamped_value,
-                               m_physical_servo_values.high_clamped_value);
   hal::print<128>(
     *console,
-    "Target: %f, Position: %f, Error: %f, pid: %f, projected: %f\n",
+    "Target: %f, Position: %f, Error: %f, projected: %f, clamped power: %f\n",
     m_target.position,
     get_actual_position(),
     error,
-    pid_sum,
-    projected_power);
+    projected_power,
+    get_power());
   m_active_power = projected_power;
   set_h_bridge_power(m_active_power);
 }
